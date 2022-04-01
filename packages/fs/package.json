@@ -1,0 +1,25 @@
+{
+  "name": "@omegadot/fs",
+  "version": "0.1.0",
+  "description": "",
+  "module": "dist/index.js",
+  "main": "dist/index.js",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "run -T tsc --outDir dist --declaration src/*.ts",
+    "generate-barrels": "run -T barrelsby --delete -d src",
+    "prepublishOnly": "yarn generate-barrels && yarn build"
+  },
+  "keywords": [],
+  "author": "Hendrik Gossler <h.gossler@omegadot.software>",
+  "license": "ISC",
+  "engines": {
+    "node": "^14.14.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^27.4.1",
+    "@types/node": "^14"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+	"noEmit": true,
+	"strict": true,
+	"target": "ES2019",
+	"module": "CommonJS",
+	"esModuleInterop": true,
+	"allowSyntheticDefaultImports": true,
+	"forceConsistentCasingInFileNames": true,
+	"moduleResolution": "node",
+	"resolveJsonModule": true,
+	"emitDecoratorMetadata": true,
+	"experimentalDecorators": true,
+	"isolatedModules": true,
+	"jsx": "preserve",
+	"types": [
+	  "node",
+	  "jest"
+	],
+	"baseUrl": "./typings",
+	"typeRoots": [
+	  "typings",
+	  "node_modules/@types"
+	]
+  },
+  "include": ["**/*", "**/.*"]
+}

@@ -1,0 +1,25 @@
+{
+  "name": "@omegadot/tsrc",
+  "version": "0.4.4",
+  "author": "Hendrik Gossler",
+  "license": "UNLICENSED",
+  "bin": "dist/generate.js",
+  "files": [
+    "dist",
+    "templates"
+  ],
+  "scripts": {
+    "build": "run -T tsc --outDir dist bin/*.ts --esModuleInterop",
+    "prepublishOnly": "yarn build"
+  },
+  "dependencies": {
+    "@omegadot/fs": "workspace:packages/fs",
+    "commander": "^4.0.0",
+    "ts-json-schema-generator": "^0.89.0",
+    "verror": "^1.10.0"
+  },
+  "devDependencies": {
+    "@types/commander": "^2.12.2",
+    "@types/verror": "^1.10.5"
+  }
+}

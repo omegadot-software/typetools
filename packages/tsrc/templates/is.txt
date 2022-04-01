@@ -1,0 +1,11 @@
+/**
+ * Generated file. Do not edit!
+ */
+/* eslint-disable */
+import { ${type.name} } from "${type.relativePath}";
+import { validate${type.name} } from "./validate${type.name}";
+
+
+export function is${type.name}(arg: any): arg is ${type.name} {
+	return validate${type.name}(arg).length == 0;
+}

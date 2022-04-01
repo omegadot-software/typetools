@@ -1,0 +1,12 @@
+/**
+ * Generated file. Do not edit!
+ */
+/* eslint-disable */
+import { ${type.name} } from "${type.relativePath}";
+import { validate${type.name} } from "./validate${type.name}";
+
+
+export function assert${type.name}(arg: any): asserts arg is ${type.name} {
+	const errors = validate${type.name}(arg);
+	if(errors.length > 0) throw new Error("Cannot convert to type ${type.name}: " + errors[0].message);
+}
