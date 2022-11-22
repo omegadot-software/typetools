@@ -1,4 +1,4 @@
-import * as assert from "assert";
+import assert from "assert";
 
 /**
  * Asserts that t is not undefined
@@ -6,5 +6,5 @@ import * as assert from "assert";
 export function assertDefined<T>(t: T | undefined | null, msg?: string): asserts t is T {
 	// Prevent 0 from triggering the assertion
 	if (typeof t === "number") return;
-	assert.ok(t, msg);
+	assert(t, msg);
 }

@@ -1,15 +1,14 @@
 {
   "name": "@omegadot/tsrc",
-  "version": "0.4.4",
+  "version": "0.5.0",
   "author": "Hendrik Gossler",
   "license": "UNLICENSED",
-  "bin": "dist/generate.js",
+  "bin": "dist/bin/generate.js",
   "files": [
     "dist",
     "templates"
   ],
   "scripts": {
-    "build": "run -T tsc --outDir dist bin/*.ts --esModuleInterop",
     "prepublishOnly": "yarn build"
   },
   "dependencies": {

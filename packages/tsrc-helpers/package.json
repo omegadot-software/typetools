@@ -1,17 +1,15 @@
 {
   "name": "@omegadot/tsrc-helpers",
-  "version": "0.4.2",
+  "version": "0.5.0",
   "author": "Hendrik Gossler <h.gossler@omegadot.software>",
   "license": "ISC",
-  "module": "dist/index.js",
-  "main": "dist/index.js",
+  "type": "module",
+  "main": "dist/src/index.js",
   "files": [
     "dist"
   ],
   "scripts": {
-    "build": "run -T tsc --outDir dist --declaration src/*.ts --esModuleInterop --resolveJsonModule",
-    "generate-barrels": "run -T barrelsby --delete -d src",
-    "prepublishOnly": "yarn generate-barrels && yarn build"
+    "generate-barrels": "run -T barrelsby --delete -d src"
   },
   "dependencies": {
     "ajv": "^6.10.2"

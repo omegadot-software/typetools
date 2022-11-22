@@ -4,6 +4,9 @@
   "author": "Hendrik Gossler <h.gossler@omegadot.software>",
   "license": "MIT",
   "private": true,
+  "scripts": {
+    "build": "tsc --build"
+  },
   "workspaces": [
     "packages/*"
   ],

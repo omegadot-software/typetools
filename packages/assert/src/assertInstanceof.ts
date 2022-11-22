@@ -1,4 +1,4 @@
-import * as assert from "assert";
+import assert from "assert";
 
 /**
  * Asserts that `obj` is instanceof `Class`
@@ -8,5 +8,5 @@ export function assertInstanceof<T>(
 	Class: new (...args: any[]) => T,
 	msg?: string
 ): asserts o is T {
-	assert.ok(o instanceof Class, msg);
+	assert(o instanceof Class, msg);
 }
