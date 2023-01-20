@@ -1,6 +1,6 @@
 {
   "name": "@omegadot/fs",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "author": "Hendrik Gossler <h.gossler@omegadot.software>",
   "license": "ISC",
   "exports": {
@@ -8,7 +8,6 @@
     "require": "./dist/cjs/index.js"
   },
   "types": "./dist/src/index.d.ts",
-  "type": "module",
   "files": [
     "dist"
   ],
