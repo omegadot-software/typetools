@@ -1,10 +1,14 @@
 {
   "name": "@omegadot/assert",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "author": "Hendrik Gossler <h.gossler@omegadot.software>",
   "license": "ISC",
+  "exports": {
+    "import": "./dist/src/index.js",
+    "require": "./dist/cjs/index.js"
+  },
+  "types": "./dist/src/index.d.ts",
   "type": "module",
-  "main": "dist/src/index.js",
   "files": [
     "dist"
   ],

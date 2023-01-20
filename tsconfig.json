@@ -1,4 +1,5 @@
 {
+	"extends": "./tsconfig_base.json",
 	"files": [],
 	"include": [],
 	"references": [

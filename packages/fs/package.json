@@ -1,18 +1,20 @@
 {
   "name": "@omegadot/fs",
-  "version": "0.2.0",
-  "description": "",
+  "version": "0.2.1",
+  "author": "Hendrik Gossler <h.gossler@omegadot.software>",
+  "license": "ISC",
+  "exports": {
+    "import": "./dist/src/index.js",
+    "require": "./dist/cjs/index.js"
+  },
+  "types": "./dist/src/index.d.ts",
   "type": "module",
-  "main": "dist/src/index.js",
   "files": [
-    "dist/"
+    "dist"
   ],
   "scripts": {
     "generate-barrels": "run -T barrelsby --delete -d src"
   },
-  "keywords": [],
-  "author": "Hendrik Gossler <h.gossler@omegadot.software>",
-  "license": "ISC",
   "engines": {
     "node": "^14.14.0"
   },
