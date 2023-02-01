@@ -1,6 +1,6 @@
 import { build, BuildOptions } from "esbuild";
 
-for (const pkg of ["assert", "fs"]) {
+for (const pkg of ["assert", "fs", "tabular-data"]) {
 	buildCJS(`packages/${pkg}`);
 }
 

@@ -5,6 +5,7 @@
 	"references": [
 		{ "path": "./packages/assert" },
 		{ "path": "./packages/fs" },
+		{ "path": "./packages/tabular-data" },
 		{ "path": "./packages/tsrc" },
 		{ "path": "./packages/tsrc-helpers" }
 	]

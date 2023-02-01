@@ -1069,6 +1069,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@omegadot/tabular-data@workspace:packages/tabular-data":
+  version: 0.0.0-use.local
+  resolution: "@omegadot/tabular-data@workspace:packages/tabular-data"
+  languageName: unknown
+  linkType: soft
+
 "@omegadot/tsrc-helpers@workspace:packages/tsrc-helpers":
   version: 0.0.0-use.local
   resolution: "@omegadot/tsrc-helpers@workspace:packages/tsrc-helpers"
