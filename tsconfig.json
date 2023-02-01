@@ -1,11 +1,32 @@
 {
-	"extends": "./tsconfig_base.json",
-	"files": [],
-	"include": [],
-	"references": [
-		{ "path": "./packages/assert" },
-		{ "path": "./packages/fs" },
-		{ "path": "./packages/tsrc" },
-		{ "path": "./packages/tsrc-helpers" }
-	]
+	"compilerOptions": {
+		"pretty": true,
+
+		"target": "ES2019",
+		"module": "ES6",
+		"moduleResolution": "node",
+
+		"esModuleInterop": true,
+		"allowSyntheticDefaultImports": true,
+		"forceConsistentCasingInFileNames": true,
+		"resolveJsonModule": true,
+		"emitDecoratorMetadata": false,
+		"experimentalDecorators": false,
+		"isolatedModules": true,
+		"jsx": "preserve",
+
+		"declaration": true,
+		"declarationMap": true,
+		"sourceMap": true,
+		"composite": true,
+		"noEmitOnError": true,
+		"emitDeclarationOnly": false,
+
+		"strict": true,
+
+		"newLine": "lf",
+
+		"types": ["node", "jest"]
+	},
+	"include": ["**/*"]
 }

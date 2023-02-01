@@ -1,10 +1,8 @@
 {
-  "extends": "../../tsconfig_base.json",
-  "include": [
-    "bin/**/*"
-  ],
-  "compilerOptions": {
-    "outDir": "./dist",
-    "module": "CommonJS"
-  }
+	"extends": "../../tsconfig.json",
+	"include": ["bin/**/*"],
+	"compilerOptions": {
+		"outDir": "./dist",
+		"module": "CommonJS"
+	}
 }

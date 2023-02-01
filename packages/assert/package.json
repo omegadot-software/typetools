@@ -1,17 +1,17 @@
 {
-  "name": "@omegadot/assert",
-  "version": "0.2.2",
-  "author": "Hendrik Gossler <h.gossler@omegadot.software>",
-  "license": "ISC",
-  "exports": {
-    "import": "./dist/src/index.js",
-    "require": "./dist/cjs/index.js"
-  },
-  "types": "./dist/src/index.d.ts",
-  "files": [
-    "dist"
-  ],
-  "scripts": {
-    "generate-barrels": "run -T barrelsby --delete -d src"
-  }
+	"name": "@omegadot/assert",
+	"version": "0.2.2",
+	"author": "Hendrik Gossler <h.gossler@omegadot.software>",
+	"license": "ISC",
+	"exports": {
+		"import": "./dist/src/index.js",
+		"require": "./dist/cjs/index.js"
+	},
+	"types": "./dist/src/index.d.ts",
+	"files": [
+		"dist"
+	],
+	"scripts": {
+		"generate-barrels": "run -T barrelsby --delete -d src"
+	}
 }

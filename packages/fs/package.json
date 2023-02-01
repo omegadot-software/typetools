@@ -1,24 +1,23 @@
 {
-  "name": "@omegadot/fs",
-  "version": "0.2.2",
-  "author": "Hendrik Gossler <h.gossler@omegadot.software>",
-  "license": "ISC",
-  "exports": {
-    "import": "./dist/src/index.js",
-    "require": "./dist/cjs/index.js"
-  },
-  "types": "./dist/src/index.d.ts",
-  "files": [
-    "dist"
-  ],
-  "scripts": {
-    "generate-barrels": "run -T barrelsby --delete -d src"
-  },
-  "engines": {
-    "node": "^14.14.0"
-  },
-  "devDependencies": {
-    "@types/jest": "^27.4.1",
-    "@types/node": "^14"
-  }
+	"name": "@omegadot/fs",
+	"version": "0.2.2",
+	"author": "Hendrik Gossler <h.gossler@omegadot.software>",
+	"license": "ISC",
+	"exports": {
+		"import": "./dist/src/index.js",
+		"require": "./dist/cjs/index.js"
+	},
+	"types": "./dist/src/index.d.ts",
+	"files": [
+		"dist"
+	],
+	"scripts": {
+		"generate-barrels": "run -T barrelsby --delete -d src"
+	},
+	"engines": {
+		"node": "^16"
+	},
+	"devDependencies": {
+		"@types/node": "^16"
+	}
 }

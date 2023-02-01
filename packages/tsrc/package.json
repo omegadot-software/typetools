@@ -1,24 +1,24 @@
 {
-  "name": "@omegadot/tsrc",
-  "version": "0.5.0",
-  "author": "Hendrik Gossler",
-  "license": "UNLICENSED",
-  "bin": "dist/bin/generate.js",
-  "files": [
-    "dist",
-    "templates"
-  ],
-  "scripts": {
-    "prepublishOnly": "yarn build"
-  },
-  "dependencies": {
-    "@omegadot/fs": "workspace:packages/fs",
-    "commander": "^4.0.0",
-    "ts-json-schema-generator": "^0.89.0",
-    "verror": "^1.10.0"
-  },
-  "devDependencies": {
-    "@types/commander": "^2.12.2",
-    "@types/verror": "^1.10.5"
-  }
+	"name": "@omegadot/tsrc",
+	"version": "0.5.0",
+	"author": "Hendrik Gossler",
+	"license": "UNLICENSED",
+	"bin": "dist/bin/generate.js",
+	"files": [
+		"dist",
+		"templates"
+	],
+	"scripts": {
+		"prepublishOnly": "yarn build"
+	},
+	"dependencies": {
+		"@omegadot/fs": "^0.2.2",
+		"commander": "^4.0.0",
+		"ts-json-schema-generator": "^0.89.0",
+		"verror": "^1.10.0"
+	},
+	"devDependencies": {
+		"@types/commander": "^2.12.2",
+		"@types/verror": "^1.10.5"
+	}
 }

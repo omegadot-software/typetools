@@ -1,0 +1,11 @@
+{
+	"extends": "./tsconfig.json",
+	"files": [],
+	"include": [],
+	"references": [
+		{ "path": "./packages/assert" },
+		{ "path": "./packages/fs" },
+		{ "path": "./packages/tsrc" },
+		{ "path": "./packages/tsrc-helpers" }
+	]
+}

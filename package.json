@@ -1,35 +1,49 @@
 {
-  "name": "@omegadot/typetools",
-  "version": "0.1.0",
-  "author": "Hendrik Gossler <h.gossler@omegadot.software>",
-  "license": "MIT",
-  "private": true,
-  "type": "module",
-  "scripts": {
-    "build": "tsc --build && tsx build.ts"
-  },
-  "workspaces": [
-    "packages/*"
-  ],
-  "devDependencies": {
-    "@types/eslint-plugin-prettier": "^3",
-    "@types/jest": "^27.4.1",
-    "@types/node": "^17.0.23",
-    "@types/prettier": "^2",
-    "@typescript-eslint/eslint-plugin": "^4.29.3",
-    "@typescript-eslint/parser": "^4.29.3",
-    "barrelsby": "^2.3.3",
-    "esbuild": "^0.17.3",
-    "eslint": "^7.32.0",
-    "eslint-config-prettier": "^8.3.0",
-    "eslint-import-resolver-node": "^0.3.6",
-    "eslint-plugin-import": "^2.24.1",
-    "eslint-plugin-jest": "^24.4.0",
-    "eslint-plugin-prettier": "^3.4.1",
-    "jest": "^27.0.6",
-    "prettier": "^2.3.2",
-    "tsx": "^3.12.2",
-    "typescript": "^4.6.2"
-  },
-  "packageManager": "yarn@3.2.0"
+	"name": "@omegadot/typetools",
+	"version": "0.1.0",
+	"author": "Hendrik Gossler <h.gossler@omegadot.software>",
+	"license": "MIT",
+	"private": true,
+	"scripts": {
+		"build": "tsc --build tsconfig-build.json && tsx build.ts",
+		"lint": "eslint --fix --ext .ts,.tsx .",
+		"code-style-check": "prettier --check .",
+		"prettier": "prettier --write .",
+		"test": "jest"
+	},
+	"workspaces": [
+		"packages/*"
+	],
+	"devDependencies": {
+		"@types/jest": "^29.4.0",
+		"@types/node": "^16",
+		"@types/prettier": "^2",
+		"@typescript-eslint/eslint-plugin": "^5.50.0",
+		"@typescript-eslint/parser": "^5.50.0",
+		"barrelsby": "^2.5.1",
+		"esbuild": "^0.17.5",
+		"esbuild-jest": "^0.5.0",
+		"eslint": "^8.33.0",
+		"eslint-config-prettier": "^8.6.0",
+		"eslint-import-resolver-node": "^0.3.7",
+		"eslint-plugin-import": "^2.27.5",
+		"eslint-plugin-jest": "^27.2.1",
+		"jest": "^29.4.1",
+		"prettier": "^2.8.3",
+		"tsx": "^3.12.2",
+		"typescript": "^4.9.5"
+	},
+	"jest": {
+		"testMatch": [
+			"**/__tests__/**/*.(spec|test).[jt]s?(x)"
+		],
+		"transform": {
+			"^.+\\.(js|jsx|ts|tsx)$": "esbuild-jest"
+		},
+		"testEnvironment": "node"
+	},
+	"prettier": {
+		"useTabs": true
+	},
+	"packageManager": "yarn@3.2.0"
 }
