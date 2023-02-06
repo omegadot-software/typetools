@@ -13,5 +13,8 @@
 	],
 	"scripts": {
 		"generate-barrels": "run -T barrelsby --delete -d src"
+	},
+	"dependencies": {
+		"@omegadot/storage-engine": "workspace:^"
 	}
 }
