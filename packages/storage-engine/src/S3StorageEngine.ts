@@ -9,11 +9,13 @@ import {
 	PutObjectCommand,
 	S3,
 	S3Client,
+	S3ServiceException,
 } from "@aws-sdk/client-s3";
 import { Upload } from "@aws-sdk/lib-storage";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { assertDefined, assertInstanceof } from "@omegadot/assert";
 
+import { FileNotFoundError } from "./FileNotFoundError";
 import { IReadOptions, StorageEngine } from "./StorageEngine";
 
 export interface IS3StorageEngineConfig {
@@ -62,10 +64,27 @@ export class S3StorageEngine extends StorageEngine {
 	}
 
 	async size(fileName: string) {
-		const info = await this.s3client.send(
-			new HeadObjectCommand(this.getBaseObject(fileName))
-		);
-		assertDefined(info.ContentLength, "Could not get S3 content length");
+		let info;
+
+		try {
+			info = await this.s3client.send(
+				new HeadObjectCommand(this.getBaseObject(fileName))
+			);
+		} catch (e) {
+			if (
+				e instanceof S3ServiceException &&
+				e.$metadata.httpStatusCode === 404
+			) {
+				throw new FileNotFoundError();
+			}
+
+			throw e;
+		}
+
+		if (typeof info.ContentLength !== "number") {
+			throw new Error("Could not get S3 content length");
+		}
+
 		return info.ContentLength;
 	}
 
@@ -109,14 +128,25 @@ export class S3StorageEngine extends StorageEngine {
 		// It looks like S3 does not support renaming/moving. The recommended way is to copy and
 		// then delete the source
 		// https://docs.aws.amazon.com/AmazonS3/latest/userguide/copy-object.html
-		await this.s3client.send(
-			new CopyObjectCommand({
-				// Specify Source
-				CopySource: `${this.bucket}/${this.getKey(oldFileName)}`,
-				// Destination is taken from "Key" of the "base object"
-				...this.getBaseObject(newFileName),
-			})
-		);
+		try {
+			await this.s3client.send(
+				new CopyObjectCommand({
+					// Specify Source
+					CopySource: `${this.bucket}/${this.getKey(oldFileName)}`,
+					// Destination is taken from "Key" of the "base object"
+					...this.getBaseObject(newFileName),
+				})
+			);
+		} catch (e) {
+			if (
+				e instanceof S3ServiceException &&
+				e.$metadata.httpStatusCode === 404
+			) {
+				throw new FileNotFoundError();
+			}
+
+			throw e;
+		}
 
 		await this.remove(oldFileName);
 	}
@@ -169,21 +199,30 @@ export class S3StorageEngine extends StorageEngine {
 			// See: https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Range
 			const range = `bytes=${start}-${end !== undefined ? `${end}` : ""}`;
 
-			const response = await this.s3client.send(
-				new GetObjectCommand({
-					...this.getBaseObject(path),
-					Range: range,
-				})
-			);
+			try {
+				const response = await this.s3client.send(
+					new GetObjectCommand({
+						...this.getBaseObject(path),
+						Range: range,
+					})
+				);
 
-			// Type instanceOf assertion is hopefully justified because this code runs only in a
-			// node context (and not in a browser)
-			// See: https://stackoverflow.com/a/69803144
-			assertDefined(response.Body);
-			assertInstanceof(response.Body, Readable);
-			const body = response.Body;
+				// Type instanceOf assertion is hopefully justified because this code runs only in a
+				// node context (and not in a browser)
+				// See: https://stackoverflow.com/a/69803144
+				assertInstanceof(response.Body, Readable);
+				response.Body.pipe(stream);
+			} catch (e) {
+				// console.log(e);
+				if (
+					e instanceof S3ServiceException &&
+					e.$metadata.httpStatusCode === 404
+				) {
+					throw new FileNotFoundError();
+				}
 
-			body.pipe(stream);
+				throw e;
+			}
 		})().catch((e) => {
 			assertInstanceof(e, Error);
 			// Destroy streams if the IIFE function causes issues on initialization
@@ -210,6 +249,7 @@ export class S3StorageEngine extends StorageEngine {
 				leavePartsOnError: false, // optional manually handle dropped parts
 			});
 
+			// Keeping this as a reminder on how to implement a progress indicator
 			// parallelUploads3.on("httpUploadProgress", (progress) => {
 			// 		console.log(progress);
 			// 	});

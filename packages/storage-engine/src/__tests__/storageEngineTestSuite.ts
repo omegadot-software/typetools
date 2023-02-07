@@ -1,4 +1,5 @@
 import { streamToString } from "./streamToString";
+import { FileNotFoundError } from "../FileNotFoundError";
 import { IReadOptions, StorageEngine } from "../StorageEngine";
 
 export function storageEngineTestSuite(
@@ -54,6 +55,12 @@ export function storageEngineTestSuite(
 				expect(buffer).toBe(buffer16);
 				expect(buffer.toString("utf8")).toBe("abcdefghijklmnop");
 			});
+
+			test("throws FileNotFoundError when file does not exist", async () => {
+				await expect(
+					sto.read("THIS_FILE_SHOULD_NOT_EXIST")
+				).rejects.toBeInstanceOf(FileNotFoundError);
+			});
 		});
 
 		describe("rename()", () => {
@@ -72,6 +79,12 @@ export function storageEngineTestSuite(
 
 				await sto.remove(dst);
 			});
+
+			test.only("throws FileNotFoundError when file does not exist", async () => {
+				await expect(
+					sto.rename("THIS_FILE_SHOULD_NOT_EXIST", "new-name")
+				).rejects.toBeInstanceOf(FileNotFoundError);
+			});
 		});
 
 		describe("remove()", () => {
@@ -89,6 +102,12 @@ export function storageEngineTestSuite(
 			test("returns size of file in bytes", async () => {
 				expect(await sto.size("abc.txt")).toBe(26);
 			});
+
+			test("throws FileNotFoundError when file does not exist", async () => {
+				await expect(
+					sto.size("THIS_FILE_SHOULD_NOT_EXIST")
+				).rejects.toBeInstanceOf(FileNotFoundError);
+			});
 		});
 
 		describe("createReadStream()", () => {
@@ -98,16 +117,20 @@ export function storageEngineTestSuite(
 				expect(await streamToString(stream)).toBe(files["abc.txt"]);
 			});
 
-			test("throws on non existing files", async () => {
-				const stream = sto.createReadStream("THIS_FILE_SHOULD_NOT_EXIST");
+			test("emits FileNotFoundError when file does not exist", async () => {
+				const promise = new Promise((resolve, reject) => {
+					const stream = sto.createReadStream("THIS_FILE_SHOULD_NOT_EXIST");
+					stream.on("error", reject);
+					stream.on("close", resolve);
+				});
 
-				await expect(streamToString(stream)).rejects.toThrow();
+				return expect(promise).rejects.toBeInstanceOf(FileNotFoundError);
 			});
 		});
 
 		describe("createWriteStream()", () => {
 			test("appends data to end of file", async () => {
-				const stream = sto.createWriteStream("stream.txt", 12);
+				const stream = sto.createWriteStream("stream.txt");
 				const promise = new Promise((resolve, reject) => {
 					stream.on("close", resolve);
 					stream.on("error", reject);

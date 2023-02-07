@@ -3,9 +3,11 @@ import { FileHandle, readFile, rename, rm, writeFile } from "fs/promises";
 import { cwd } from "process";
 import { Readable, Writable } from "stream";
 
+import { assertInstanceof } from "@omegadot/assert";
 import { stat } from "@omegadot/fs";
 import semver from "semver";
 
+import { FileNotFoundError } from "./FileNotFoundError";
 import { ReusableFileHandle } from "./ReusableFileHandle";
 import { IReadOptions, StorageEngine } from "./StorageEngine";
 
@@ -141,7 +143,14 @@ export class FileSystemStorageEngine extends StorageEngine {
 	}
 
 	async size(fileName: string) {
-		return (await stat(this.fullPath(fileName))).size;
+		try {
+			return (await stat(this.fullPath(fileName))).size;
+		} catch (e) {
+			if (e && typeof e === "object" && "code" in e && e.code === "ENOENT") {
+				throw new FileNotFoundError();
+			}
+			throw e;
+		}
 	}
 
 	private async open(

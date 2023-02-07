@@ -9,6 +9,9 @@ export interface IReadOptions {
 /**
  * Base class that describes basic io operations to files.
  *
+ * Methods that operate on existing files will throw an error of type `FileNotFoundError` to indicate that the file or
+ * a component of the specified pathname does not exist.
+ *
  * A dedicated class (`StorageEngineRemoteAccess`) exists for providing efficient access to these files to remote users.
  */
 export abstract class StorageEngine {
@@ -25,11 +28,22 @@ export abstract class StorageEngine {
 
 	abstract rename(oldFileName: string, newFileName: string): Promise<void>;
 
+	/**
+	 * Returns the size of the file in bytes.
+	 *
+	 * An error of type `FileNotFoundError` is thrown if the file does not exist.
+	 *
+	 * @param fileName
+	 * @throws FileNotFoundError
+	 */
 	abstract size(fileName: string): Promise<number>;
 
 	/**
-	 * options can include start and end values to read a range of bytes from the file instead of the entire file.
-	 * Both start and end are inclusive and start counting at 0, allowed values are in the [0, Number.MAX_SAFE_INTEGER] range.
+	 * Options can include start and end values to read a range of bytes from the file instead of the entire file.
+	 * Both start and end are inclusive and start counting at 0, allowed values are in the [0, Number.MAX_SAFE_INTEGER]
+	 * range.
+	 *
+	 * An error event with a payload of type `FileNotFoundError` is emitted if the file does not exist.
 	 */
 	abstract createReadStream(
 		path: string,
