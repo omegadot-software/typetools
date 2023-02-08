@@ -80,7 +80,7 @@ export function storageEngineTestSuite(
 				await sto.remove(dst);
 			});
 
-			test.only("throws FileNotFoundError when file does not exist", async () => {
+			test("throws FileNotFoundError when file does not exist", async () => {
 				await expect(
 					sto.rename("THIS_FILE_SHOULD_NOT_EXIST", "new-name")
 				).rejects.toBeInstanceOf(FileNotFoundError);

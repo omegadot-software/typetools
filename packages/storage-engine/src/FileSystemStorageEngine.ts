@@ -1,7 +1,7 @@
 import fs from "fs";
 import { FileHandle, readFile, rename, rm, writeFile } from "fs/promises";
 import { cwd } from "process";
-import { Readable, Writable } from "stream";
+import { PassThrough, Readable, Writable } from "stream";
 
 import { assertInstanceof } from "@omegadot/assert";
 import { stat } from "@omegadot/fs";
@@ -35,14 +35,22 @@ export class FileSystemStorageEngine extends StorageEngine {
 	}
 
 	async read(path: string, options: IReadOptions = {}) {
-		const { handle, free } = await this.open(path);
+		let freeHandle;
+
 		try {
+			const { handle, free } = await this.open(path);
+			freeHandle = free;
 			// Explicitly set position so that the read function will not continue reading from where it left off when
 			// it was last invoked
 			const position = options.position ?? 0;
 			return await handle.read({ ...options, position });
+		} catch (e) {
+			if (isENOENTError(e)) {
+				throw new FileNotFoundError();
+			}
+			throw e;
 		} finally {
-			free();
+			if (freeHandle) freeHandle();
 		}
 	}
 
@@ -101,7 +109,16 @@ export class FileSystemStorageEngine extends StorageEngine {
 		path: string,
 		options?: { start?: number; end?: number }
 	): Readable {
-		return fs.createReadStream(this.fullPath(path), options);
+		const stream = new PassThrough();
+		const readStream = fs.createReadStream(this.fullPath(path), options);
+
+		// Emit our custom FileNotFoundError, if applicable
+		readStream.on("error", (e) => {
+			const error = isENOENTError(e) ? new FileNotFoundError() : e;
+			stream.destroy(error);
+		});
+
+		return readStream.pipe(stream);
 	}
 
 	createWriteStream(path: string): Writable {
@@ -146,7 +163,7 @@ export class FileSystemStorageEngine extends StorageEngine {
 		try {
 			return (await stat(this.fullPath(fileName))).size;
 		} catch (e) {
-			if (e && typeof e === "object" && "code" in e && e.code === "ENOENT") {
+			if (isENOENTError(e)) {
 				throw new FileNotFoundError();
 			}
 			throw e;
@@ -172,6 +189,19 @@ export class FileSystemStorageEngine extends StorageEngine {
 	}
 
 	async rename(oldFileName: string, newFileName: string): Promise<void> {
-		await rename(this.fullPath(oldFileName), this.fullPath(newFileName));
+		try {
+			await rename(this.fullPath(oldFileName), this.fullPath(newFileName));
+		} catch (e) {
+			if (isENOENTError(e)) {
+				throw new FileNotFoundError();
+			}
+			throw e;
+		}
 	}
+}
+
+function isENOENTError(e: unknown): boolean {
+	return Boolean(
+		e && typeof e === "object" && "code" in e && e.code === "ENOENT"
+	);
 }
