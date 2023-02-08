@@ -11,7 +11,7 @@
 		"dist"
 	],
 	"scripts": {
-		"generate-barrels": "run -T barrelsby --delete -d src"
+		"generate-barrels": "run -T barrelsby --delete -e __tests__ -d src"
 	},
 	"dependencies": {
 		"@aws-sdk/abort-controller": "^3.257.0",

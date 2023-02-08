@@ -12,7 +12,7 @@
 		"dist"
 	],
 	"scripts": {
-		"generate-barrels": "run -T barrelsby --delete -d src"
+		"generate-barrels": "run -T barrelsby --delete -e __tests__ -d src"
 	},
 	"dependencies": {
 		"@omegadot/storage-engine": "workspace:^"

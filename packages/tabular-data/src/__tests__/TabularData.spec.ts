@@ -128,7 +128,7 @@ describe.each(testCases)("TabularData %j", (data: number[][]) => {
 
 		beforeEach(async () => {
 			await sto.write(testFilePath, Buffer.from(dataAsTypedArray.buffer));
-			stream = await TabularDataStream.init(sto, testFilePath, numColumns);
+			stream = await TabularDataStream.open(sto, testFilePath, numColumns);
 		});
 
 		afterAll(async () => {

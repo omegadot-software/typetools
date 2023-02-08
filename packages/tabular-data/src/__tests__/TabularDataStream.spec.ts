@@ -1,112 +1,78 @@
-import exp from "constants";
+import { Writable } from "stream";
+import { finished } from "stream/promises";
 
-import { mkdirTmp, rmrf } from "@omegadot/fs";
+import { mkdirTmp } from "@omegadot/fs";
 import {
 	FileSystemStorageEngine,
 	StorageEngine,
 } from "@omegadot/storage-engine";
 
-import { TabularDataImmutable } from "../TabularDataImmutable";
-import { TabularDataMutable } from "../TabularDataMutable";
 import { TabularDataStream } from "../TabularDataStream";
-import { ITabularData } from "../interface/ITabularData";
-import { ITabularDataBuffer } from "../interface/ITabularDataBuffer";
 
-const testCases = [
-	// [
-	// 	// Empty
-	// 	[],
-	// ],
-	[
-		// Single row with single item
-		[[1]],
-	],
-	// [
-	// 	// Multiple rows with single column
-	// 	[[1], [2], [3]],
-	// ],
-	// [
-	// 	// Single row with multiple columns
-	// 	[[1, 2, 3]],
-	// ],
-	// [
-	// 	// Multiple rows with multiple columns (3x3)
-	// 	[
-	// 		[1, 1, 1],
-	// 		[2, 2, 2],
-	// 		[3, 3, 3],
-	// 	],
-	// ],
-	// [
-	// 	// Multiple rows with multiple columns (3x4)
-	// 	[
-	// 		[1, 2, 3, 4],
-	// 		[2, 2, 2, 5],
-	// 		[6, 3, 3, 3],
-	// 	],
-	// ],
-	// [
-	// 	// Multiple rows with multiple columns (4x3)
-	// 	[
-	// 		[1, 2, 3],
-	// 		[2, 2, 2],
-	// 		[6, 3, 3],
-	// 		[6, 3, 3],
-	// 	],
-	// ],
-];
 describe("TabularDataStream", () => {
-	test("creates file if it does not exist", async () => {
-		const filename = "non-existent";
+	async function setupWithNewFile() {
+		const filename = "new-file";
 		const sto: StorageEngine = new FileSystemStorageEngine(await mkdirTmp());
-		await TabularDataStream.init(sto, filename, 1);
 
-		expect(await sto.size(filename)).toBe(0);
-	});
+		const td = await TabularDataStream.open(sto, filename, 3);
+
+		const stream = td.createWriteStream();
+
+		return {
+			filename,
+			sto,
+			td,
+			stream,
+		};
+	}
 
 	test("empty file has row count of zero", async () => {
-		const filename = "empty";
+		const filename = "new-file";
 		const sto: StorageEngine = new FileSystemStorageEngine(await mkdirTmp());
 
-		// Create empty file
-		await sto.write(filename, Buffer.alloc(0));
-
-		const td = await TabularDataStream.init(sto, filename, 1);
+		const td = await TabularDataStream.open(sto, filename, 1);
 
 		expect(td.numRows()).toBe(0);
 	});
 
-	test("adding data updates number of rows", async () => {
-		const filename = "empty";
-		const sto: StorageEngine = new FileSystemStorageEngine(await mkdirTmp());
+	test("adding data by calling write() updates number of rows", async () => {
+		const { stream, td } = await setupWithNewFile();
 
-		// Create empty file
-		await sto.write(filename, Buffer.alloc(0));
+		stream.write([1, 2, 3]);
+		stream.end();
+		expect(td.numRows()).toBe(1);
 
-		const td = await TabularDataStream.init(sto, filename, 3);
+		await finished(stream as Writable);
+	});
 
-		await td.push([1, 2, 3]);
+	test("adding data by calling end() updates number of rows", async () => {
+		const { stream, td } = await setupWithNewFile();
+
+		stream.end([1, 2, 3]);
 
 		expect(td.numRows()).toBe(1);
+
+		await finished(stream as Writable);
 	});
 
 	test("file size is correct", async () => {
-		const filename = "test";
-		const sto: StorageEngine = new FileSystemStorageEngine(await mkdirTmp());
-		const td = await TabularDataStream.init(sto, filename, 3);
+		const { stream, sto, filename } = await setupWithNewFile();
 
-		await td.push([1, 2, 3]);
+		stream.end([1, 2, 3]);
+
+		await finished(stream as Writable);
 
 		expect(await sto.size(filename)).toBe(3 * Float64Array.BYTES_PER_ELEMENT);
 	});
 
 	test("append rows and read individual rows", async () => {
-		const filename = "test";
-		const sto: StorageEngine = new FileSystemStorageEngine(await mkdirTmp());
-		const td = await TabularDataStream.init(sto, filename, 3);
+		const { stream, td } = await setupWithNewFile();
 
-		await td.push([1, 2, 3]);
-		await td.push([4, 5, 6]);
+		stream.write([1, 2, 3]);
+		stream.write([4, 5, 6]);
+		stream.end();
+
+		await finished(stream as Writable);
 
 		const row0 = await td.row(0);
 		expect(row0).toEqual([1, 2, 3]);
@@ -116,12 +82,13 @@ describe("TabularDataStream", () => {
 	});
 
 	test("append rows and iterate", async () => {
-		const filename = "test";
-		const sto: StorageEngine = new FileSystemStorageEngine(await mkdirTmp());
-		const td = await TabularDataStream.init(sto, filename, 3);
+		const { stream, td } = await setupWithNewFile();
 
-		await td.push([1, 2, 3]);
-		await td.push([4, 5, 6]);
+		stream.write([1, 2, 3]);
+		stream.write([4, 5, 6]);
+		stream.end();
+
+		await finished(stream as Writable);
 
 		const rows = [];
 		for await (const row of td) rows.push(row);
@@ -131,14 +98,28 @@ describe("TabularDataStream", () => {
 	});
 
 	describe("errors", () => {
-		test("push row with too few elements", async () => {
-			const filename = "empty";
-			const sto: StorageEngine = new FileSystemStorageEngine(await mkdirTmp());
+		test("destroys stream when calling `write()` with incorrect row when no callback is provided", async () => {
+			const { stream } = await setupWithNewFile();
 
-			const td = await TabularDataStream.init(sto, filename, 1);
+			// Add a row with 1 value instead of 3
+			stream.write([1]);
+			await expect(finished(stream as Writable)).rejects.toThrowError(
+				/columns/
+			);
+		});
 
-			// Add a row with three values instead of 1
-			return expect(td.push([1, 2, 3])).rejects.toThrowError(/columns/);
+		test("does not destroy stream when calling `write()` with incorrect row when callback is provided", async () => {
+			const { stream } = await setupWithNewFile();
+
+			const cb = jest.fn();
+
+			// Add a row with 1 value instead of 3
+			stream.write([1], cb);
+			stream.write([1, 2, 3]);
+			expect(cb).toHaveBeenCalledTimes(1);
+			expect(cb.mock.lastCall[0]).toBeInstanceOf(Error);
+			stream.end();
+			await expect(finished(stream as Writable)).resolves.toBeUndefined();
 		});
 	});
 });
