@@ -106,7 +106,7 @@ export class FileSystemStorageEngine extends StorageEngine {
 
 	createReadStream(
 		path: string,
-		options?: { start?: number; end?: number }
+		options?: { start?: number; end?: number; highWaterMark?: number }
 	): Readable {
 		const stream = new PassThrough();
 		const readStream = fs.createReadStream(this.fullPath(path), options);

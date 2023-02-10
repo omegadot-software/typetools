@@ -43,11 +43,19 @@ export abstract class StorageEngine {
 	 * Both start and end are inclusive and start counting at 0, allowed values are in the [0, Number.MAX_SAFE_INTEGER]
 	 * range.
 	 *
+	 * The amount of data potentially buffered can be set using the highWaterMark option, which specifies a total number
+	 * of bytes. Once the total size of the internal read buffer reaches the threshold specified by highWaterMark, the
+	 * stream will temporarily stop reading data from the underlying resource until the data currently buffered can be
+	 * consumed.
+	 *
+	 * The highWaterMark option is a threshold, not a limit: it dictates the amount of data that a stream buffers before
+	 * it stops asking for more data. It does not enforce a strict memory limitation in general.
+	 *
 	 * An error event with a payload of type `FileNotFoundError` is emitted if the file does not exist.
 	 */
 	abstract createReadStream(
 		path: string,
-		options?: { start?: number; end?: number }
+		options?: { start?: number; end?: number; highWaterMark?: number }
 	): Readable;
 
 	/**

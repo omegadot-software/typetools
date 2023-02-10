@@ -9,7 +9,7 @@ import {
 
 import { TabularData } from "../TabularData";
 
-describe("TabularDataStream", () => {
+describe("TabularData", () => {
 	async function setupWithNewFile() {
 		const filename = "new-file";
 		const sto: StorageEngine = new FileSystemStorageEngine(await mkdirTmp());
@@ -95,6 +95,43 @@ describe("TabularDataStream", () => {
 
 		expect(rows[0]).toEqual([1, 2, 3]);
 		expect(rows[1]).toEqual([4, 5, 6]);
+	});
+
+	// This test serves to assert that the code handles data that
+	// comes in several chunks correctly.
+	test("append rows and iterate - small streamed chunks", async () => {
+		const { stream, td, sto } = await setupWithNewFile();
+
+		const rows = [];
+		for (let i = 1; i <= 24; i++) {
+			const row = [i, i * 2, i * 3];
+			rows.push(row);
+			stream.write(row);
+		}
+		expect.assertions(rows.length);
+
+		stream.end();
+
+		// eslint-disable-next-line @typescript-eslint/unbound-method
+		const createReadStream = sto.createReadStream;
+
+		sto.createReadStream = (path, options) => {
+			return createReadStream.call(sto, path, {
+				...options,
+				// Purposely taking a non-multiple of 8
+				highWaterMark: 12,
+			});
+		};
+
+		await finished(stream as Writable);
+
+		const streamedRows = [];
+		for await (const row of td) streamedRows.push(row);
+
+		// Comparing stringified rows individually gives better error messages
+		for (let i = 0; i < rows.length; i++) {
+			expect(streamedRows[i].join(", ")).toEqual(rows[i].join(", "));
+		}
 	});
 
 	describe("errors", () => {

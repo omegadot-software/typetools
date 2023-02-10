@@ -1,11 +1,10 @@
 import assert from "assert";
+import { Buffer } from "buffer";
 import EventEmitter from "events";
 import { resolve } from "path";
 import { Stream } from "stream";
 
 import { StorageEngine, FileNotFoundError } from "@omegadot/storage-engine";
-
-import { rowIndexToElementIndex } from "./rowIndexToElementIndex";
 
 /**
  * The underlying data store for a `TabularData` is a file.
@@ -102,8 +101,8 @@ export class TabularData implements AsyncIterable<readonly number[]> {
 		if (this.numRows() === 0) return [];
 		assert(start < end, "TabularDataStream.rows: end <= start");
 
-		const startElementIndex = rowIndexToElementIndex.call(this, start);
-		const endElementIndex = rowIndexToElementIndex.call(this, end);
+		const startElementIndex = this.elementIndex(start);
+		const endElementIndex = this.elementIndex(end);
 
 		const bytes =
 			(endElementIndex - startElementIndex) * Float64Array.BYTES_PER_ELEMENT;
@@ -190,9 +189,99 @@ export class TabularData implements AsyncIterable<readonly number[]> {
 	}
 
 	async *[Symbol.asyncIterator]() {
-		for (let rowIndex = 0; rowIndex < this.numRows(); rowIndex++) {
-			yield await this.row(rowIndex);
+		const start = this.byteIndex(0);
+		const end = this.byteIndex(this.numRows());
+		const stream = this.sto.createReadStream(this.path, { start, end });
+
+		let buffer: Buffer | undefined;
+
+		for await (const chunk of stream) {
+			buffer = (buffer ? Buffer.concat([buffer, chunk]) : chunk) as Buffer;
+
+			const numberOfRows = Math.floor(buffer.length / this.bytesPerRow);
+
+			let i;
+			for (i = 0; i < numberOfRows; ++i) {
+				// Sometimes when allocating a Buffer smaller than Buffer.poolSize,
+				// for example when calling Buffer.concat, the buffer does not start
+				// from a zero offset on the underlying ArrayBuffer.
+
+				// This can cause problems when accessing the underlying ArrayBuffer directly
+				// using buf.buffer, as other parts of the ArrayBuffer may be unrelated to
+				// the Buffer object itself.
+
+				// See also
+				// https://github.com/nodejs/node/issues/24817
+				// for insight on stream chunk byte alignment.
+
+				// Constructing a TypedArray with an ArrayBuffer as the first argument does not create a copy.
+				// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray#description
+				// The length argument is *not* the number of bytes, but the number of elements in the TypedArray!
+				yield Array.from(
+					new Float64Array(
+						buffer.buffer,
+						buffer.byteOffset + i * this.bytesPerRow,
+						this.numColumns()
+					)
+				);
+			}
+
+			const bytesRead = i * this.bytesPerRow;
+
+			// Save any remaining bytes for the next iteration so it can be merged with a new chunk
+			buffer = buffer.subarray(bytesRead);
 		}
+	}
+
+	/**
+	 * Provides the element index for the given `rowIndex`, assuming the rows are stored in a contiguous block of memory in
+	 * row-major order.
+	 *
+	 * Example:
+	 *
+	 * The following data...
+	 *
+	 *  rowIndex ║     Col 1 │ Col 2  │  Col 3
+	 *  ═════════╬═══════════════════════════════
+	 *           ║  ┌                         ┐
+	 *    0      ║  │  a_11  │  a_12  │  a_13 │
+	 *    1      ║  │  a_21  │  a_22  │  a_23 │
+	 *    2      ║  │  a_31  │  a_32  │  a_33 │
+	 *           ║  └                         ┘
+	 *
+	 * ...is stored in memory like this:
+	 *
+	 * value         ║  a_11 │ a_12 │ a_13 │ a_21 │ a_22 │ a_23 │ a_31 │ a_32 │ a_33
+	 * ══════════════╬═════════════════════════════════════════════════════════════════════
+	 * elementIndex  ║    0  │   1  │   2  │   3  │   4  │   5  │   6  │   7  │   8
+	 *
+	 *
+	 * For a given `rowIndex` of 1, the function returns a value of 3.
+	 *
+	 * @param rowIndex - The row for which to return the element index. The element at the returned position contains the
+	 *                   first item of the row.
+	 *
+	 */
+	private elementIndex(rowIndex: number) {
+		assert(rowIndex >= 0, "elementIndex: rowIndex < 0");
+		assert(
+			rowIndex <= this.numRows(),
+			"elementIndex: rowIndex exceeds number of rows"
+		);
+		return rowIndex * this.numColumns();
+	}
+
+	private byteIndex(rowIndex: number) {
+		assert(rowIndex >= 0, "byteIndex: rowIndex < 0");
+		assert(
+			rowIndex <= this.numRows(),
+			"byteIndex: rowIndex exceeds number of rows"
+		);
+		return rowIndex * this.bytesPerRow;
+	}
+
+	private get bytesPerRow(): number {
+		return this.numColumns() * Float64Array.BYTES_PER_ELEMENT;
 	}
 }
 

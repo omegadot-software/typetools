@@ -211,6 +211,7 @@ export class S3StorageEngine extends StorageEngine {
 				// node context (and not in a browser)
 				// See: https://stackoverflow.com/a/69803144
 				assertInstanceof(response.Body, Readable);
+				// response.Body.readableHighWaterMark = 2
 				response.Body.pipe(stream);
 			} catch (e) {
 				// console.log(e);
