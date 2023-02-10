@@ -5,10 +5,7 @@ import { Stream } from "stream";
 
 import { StorageEngine, FileNotFoundError } from "@omegadot/storage-engine";
 
-import { ITabularData } from "./interface/ITabularData";
 import { rowIndexToElementIndex } from "./rowIndexToElementIndex";
-
-import ReadWriteStream = NodeJS.ReadWriteStream;
 
 /**
  * The underlying data store for a `TabularData` is a file.
@@ -17,9 +14,7 @@ import ReadWriteStream = NodeJS.ReadWriteStream;
  * Instances of this class resemble file handles, but additionally provide an API for working with rows and columns of
  * the file.
  */
-export class TabularDataStream
-	implements ITabularData, AsyncIterable<readonly number[]>
-{
+export class TabularData implements AsyncIterable<readonly number[]> {
 	/**
 	 * The absolute path to the file to be read.
 	 */
@@ -60,7 +55,7 @@ export class TabularDataStream
 		sto: StorageEngine,
 		path: string | string[],
 		numColumns: number
-	): Promise<TabularDataStream> {
+	): Promise<TabularData> {
 		const completePath = Array.isArray(path) ? resolve(...path) : path;
 
 		let fileSize = 0;
@@ -80,7 +75,7 @@ export class TabularDataStream
 			throw new Error("Corrupted file. Number of rows is not an int.");
 		}
 
-		return new TabularDataStream(sto, completePath, numColumns, numRows);
+		return new TabularData(sto, completePath, numColumns, numRows);
 	}
 
 	numRows() {
@@ -92,8 +87,11 @@ export class TabularDataStream
 	}
 
 	/**
-	 * Read a slice of data, i.e. rows of the original table
-	 * @param start - row index, inclusive
+	 * Returns a shallow copy of the underlying tabular data into a new two-dimensional array,
+	 * selected from `start` to `end` (`end` not included) where `start` and `end` represent the index
+	 * of items in the underlying tabular data. The underlying data will not be modified.
+	 *
+	 * @param start - row index, inclusive. If `start` is undefined, rows starts from the index 0.
 	 * @param end - row index, exclusive
 	 */
 	async rows(
@@ -126,6 +124,11 @@ export class TabularDataStream
 		return data;
 	}
 
+	/**
+	 * Access the row at the specified `rowIndex`. Same as `rows(rowIndex, rowIndex + 1)`.
+	 *
+	 * @param rowIndex - Zero-based row index to access.
+	 */
 	async row(rowIndex: number) {
 		return (await this.rows(rowIndex, rowIndex + 1))[0];
 	}
@@ -184,26 +187,6 @@ export class TabularDataStream
 		};
 
 		return Object.assign(stream, overrides);
-	}
-
-	/**
-	 * Appends the row to the end of the table. An error is thrown when the number of elements does not match the number
-	 * of columns returned by `numColumns()`.
-	 *
-	 * @param row - An array of numbers to add. Length must equal to the number of columns in the table.
-	 */
-	async pushx(row: number[]) {
-		if (row.length !== this.numColumns()) {
-			throw new Error(
-				`Number of values (${
-					row.length
-				}}) does not match number of columns (${this.numColumns()})`
-			);
-		}
-
-		const array = Float64Array.from(row);
-		// await this.sto.append(this.path, Buffer.from(array.buffer));
-		++this._numRows;
 	}
 
 	async *[Symbol.asyncIterator]() {

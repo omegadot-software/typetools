@@ -3,7 +3,6 @@ import { FileHandle, readFile, rename, rm, writeFile } from "fs/promises";
 import { cwd } from "process";
 import { PassThrough, Readable, Writable } from "stream";
 
-import { assertInstanceof } from "@omegadot/assert";
 import { stat } from "@omegadot/fs";
 import semver from "semver";
 
