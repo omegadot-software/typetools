@@ -1,6 +1,6 @@
 {
 	"name": "@omegadot/assert",
-	"version": "0.2.2",
+	"version": "0.2.3",
 	"author": "Hendrik Gossler <h.gossler@omegadot.software>",
 	"license": "ISC",
 	"exports": {

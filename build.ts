@@ -10,6 +10,9 @@ function buildCJS(packagePath: string) {
 		bundle: true,
 		sourcemap: true,
 		platform: "node",
+		// Excludes all dependencies from the bundle
+		// https://esbuild.github.io/api/#packages
+		packages: "external",
 		outdir: `${packagePath}/dist/cjs`,
 	};
 
