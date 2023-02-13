@@ -15,6 +15,8 @@
 		"generate-barrels": "run -T barrelsby --delete -e __tests__ -d src"
 	},
 	"dependencies": {
-		"@omegadot/storage-engine": "workspace:^"
+		"@omegadot/storage-engine": "workspace:^",
+		"minipass": "^4.0.3",
+		"minipass-pipeline": "^1.2.4"
 	}
 }

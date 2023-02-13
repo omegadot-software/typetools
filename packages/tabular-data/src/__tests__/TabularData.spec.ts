@@ -1,5 +1,10 @@
-import { Writable } from "stream";
-import { finished } from "stream/promises";
+import {
+	compose,
+	Transform,
+	TransformCallback,
+	Writable,
+	Stream,
+} from "stream";
 
 import { mkdirTmp } from "@omegadot/fs";
 import {
@@ -42,7 +47,7 @@ describe("TabularData", () => {
 		stream.end();
 		expect(td.numRows()).toBe(1);
 
-		await finished(stream as Writable);
+		await stream.promise();
 	});
 
 	test("adding data by calling end() updates number of rows", async () => {
@@ -52,7 +57,7 @@ describe("TabularData", () => {
 
 		expect(td.numRows()).toBe(1);
 
-		await finished(stream as Writable);
+		await stream.promise();
 	});
 
 	test("file size is correct", async () => {
@@ -60,19 +65,24 @@ describe("TabularData", () => {
 
 		stream.end([1, 2, 3]);
 
-		await finished(stream as Writable);
+		await stream.promise();
 
 		expect(await sto.size(filename)).toBe(3 * Float64Array.BYTES_PER_ELEMENT);
 	});
 
 	test("append rows and read individual rows", async () => {
-		const { stream, td } = await setupWithNewFile();
+		const filename = "new-file";
+		const sto: StorageEngine = new FileSystemStorageEngine(await mkdirTmp());
+
+		const td = await TabularData.open(sto, filename, 3);
+
+		const stream = td.createWriteStream();
 
 		stream.write([1, 2, 3]);
 		stream.write([4, 5, 6]);
 		stream.end();
 
-		await finished(stream as Writable);
+		await stream.promise();
 
 		const row0 = await td.row(0);
 		expect(row0).toEqual([1, 2, 3]);
@@ -88,7 +98,7 @@ describe("TabularData", () => {
 		stream.write([4, 5, 6]);
 		stream.end();
 
-		await finished(stream as Writable);
+		await stream.promise();
 
 		const rows = [];
 		for await (const row of td) rows.push(row);
@@ -123,7 +133,7 @@ describe("TabularData", () => {
 			});
 		};
 
-		await finished(stream as Writable);
+		await stream.promise();
 
 		const streamedRows = [];
 		for await (const row of td) streamedRows.push(row);
@@ -138,26 +148,11 @@ describe("TabularData", () => {
 		test("destroys stream when calling `write()` with incorrect row when no callback is provided", async () => {
 			const { stream } = await setupWithNewFile();
 
+			const p = stream.promise();
+
 			// Add a row with 1 value instead of 3
 			stream.write([1]);
-			await expect(finished(stream as Writable)).rejects.toThrowError(
-				/columns/
-			);
-		});
-
-		test("does not destroy stream when calling `write()` with incorrect row when callback is provided", async () => {
-			const { stream } = await setupWithNewFile();
-
-			const cb = jest.fn();
-
-			// Add a row with 1 value instead of 3
-			stream.write([1], cb);
-			stream.write([1, 2, 3]);
-			expect(cb).toHaveBeenCalledTimes(1);
-			// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-			expect(cb.mock.lastCall[0]).toBeInstanceOf(Error);
-			stream.end();
-			await expect(finished(stream as Writable)).resolves.toBeUndefined();
+			await expect(p).rejects.toThrowError(/columns/);
 		});
 	});
 });

@@ -2322,6 +2322,8 @@ __metadata:
   resolution: "@omegadot/tabular-data@workspace:packages/tabular-data"
   dependencies:
     "@omegadot/storage-engine": "workspace:^"
+    minipass: ^4.0.3
+    minipass-pipeline: ^1.2.4
   languageName: unknown
   linkType: soft
 
@@ -6547,6 +6549,13 @@ __metadata:
   dependencies:
     yallist: ^4.0.0
   checksum: 57a04041413a3531a65062452cb5175f93383ef245d6f4a2961d34386eb9aa8ac11ac7f16f791f5e8bbaf1dfb1ef01596870c88e8822215db57aa591a5bb0a77
+  languageName: node
+  linkType: hard
+
+"minipass@npm:^4.0.3":
+  version: 4.0.3
+  resolution: "minipass@npm:4.0.3"
+  checksum: a09f405e2f380ae7f6ee0cbb53b45c1fcc1b6c70fc3896f4d20649d92a10e61892c57bd9960a64cedf6c90b50022cb6c195905b515039c335b423202f99e6f18
   languageName: node
   linkType: hard
 

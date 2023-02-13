@@ -1,10 +1,16 @@
 import assert from "assert";
 import { Buffer } from "buffer";
-import EventEmitter from "events";
 import { resolve } from "path";
-import { Stream } from "stream";
+import {
+	compose,
+	PassThrough,
+	Transform,
+	TransformCallback,
+	Writable,
+} from "stream";
+import { finished } from "stream/promises";
 
-import { StorageEngine, FileNotFoundError } from "@omegadot/storage-engine";
+import { FileNotFoundError, StorageEngine } from "@omegadot/storage-engine";
 
 /**
  * The underlying data store for a `TabularData` is a file.
@@ -77,6 +83,43 @@ export class TabularData implements AsyncIterable<readonly number[]> {
 		return new TabularData(sto, completePath, numColumns, numRows);
 	}
 
+	static createTransformStream(
+		numColumns?: number
+	): ITabularDataTransformStream {
+		let columns = numColumns ?? 0;
+
+		return new Transform({
+			objectMode: true,
+			transform(
+				row: number[],
+				encoding: BufferEncoding,
+				cb: TransformCallback
+			) {
+				if (row.length === 0) {
+					return cb(new Error("Cannot write empty row."));
+				}
+
+				// Require consistent number of values for every row
+				if (row.length !== columns) {
+					if (columns !== 0) {
+						return cb(
+							new Error(
+								`Number of values (${row.length}) does not match number of columns (${columns})})`
+							)
+						);
+					}
+
+					// Initialize number of values per row
+					columns = row.length;
+				}
+
+				const doubles = new Float64Array(row);
+				const b = Buffer.from(doubles.buffer);
+				cb(null, b);
+			},
+		});
+	}
+
 	numRows() {
 		return this._numRows;
 	}
@@ -141,51 +184,29 @@ export class TabularData implements AsyncIterable<readonly number[]> {
 	createWriteStream(): ITabularDataWritableStream {
 		const stream = this.sto.createWriteStream(this.path);
 
-		// Get references to the original methods and
-		// bind them to the stream instance so we can override the method
-		const write = stream.write.bind(stream);
-		const end = stream.end.bind(stream);
-
-		const overrides: Pick<ITabularDataWritableStream, "write" | "end"> = {
-			write: (row, cb) => {
-				// It is an error when the row length is incorrect
-				if (row.length !== this.numColumns()) {
-					// Deliver the error depending on whether an argument for `cb` was provided or not
-					const error = new Error(
-						`Number of values (${
-							row.length
-						}}) does not match number of columns (${this.numColumns()})`
-					);
-
-					if (cb) {
-						cb(error);
-						return stream.writable;
-					}
-
-					stream.destroy(error);
-					return false;
-				}
+		// Create a PassThrough stream to hook into write calls and increment the row counter
+		const p = new PassThrough({
+			transform: (
+				chunk: unknown,
+				encoding: BufferEncoding,
+				callback: TransformCallback
+			) => {
 				++this._numRows;
-				const doubles = new Float64Array(row);
-				return write(new Uint8Array(doubles.buffer), cb);
+				callback(null, chunk);
 			},
-			end: (...args) => {
-				let row: number[] | undefined;
-				let cb: (() => void) | undefined;
+		});
 
-				if (Array.isArray(args[0])) {
-					row = args[0];
-					cb = args[1] as () => void;
-					overrides.write(row, cb);
-				} else {
-					cb = args[0];
-				}
+		const pipeline = compose(
+			TabularData.createTransformStream(this.numColumns()),
+			p,
+			stream
+		);
 
-				return end(cb);
+		return Object.assign(pipeline, {
+			promise() {
+				return finished(pipeline);
 			},
-		};
-
-		return Object.assign(stream, overrides);
+		});
 	}
 
 	async *[Symbol.asyncIterator]() {
@@ -285,9 +306,28 @@ export class TabularData implements AsyncIterable<readonly number[]> {
 	}
 }
 
-interface ITabularDataWritableStream extends Stream, EventEmitter {
-	writable: boolean;
-	write(row: number[], cb?: (err?: Error | null) => void): boolean;
-	end(cb?: () => void): void;
-	end(row: number[], cb?: () => void): void;
+export interface ITabularDataWritableStream extends Writable {
+	// writable: boolean;
+	write(row: number[], cb: (err?: Error | null) => void): boolean;
+
+	write(row: number[]): boolean;
+
+	end(cb?: () => void): this;
+
+	end(row: number[], cb?: () => void): this;
+
+	promise(): Promise<void>;
+}
+
+export interface ITabularDataTransformStream extends Transform {
+	// writable: boolean;
+	write(row: number[], cb: (err?: Error | null) => void): boolean;
+
+	write(row: number[]): boolean;
+
+	end(cb?: () => void): this;
+
+	end(row: number[], cb?: () => void): this;
+
+	// promise(): Promise<void>;
 }
