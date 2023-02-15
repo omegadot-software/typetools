@@ -1,3 +1,5 @@
+import { finished } from "stream/promises";
+
 import { streamToString } from "./streamToString";
 import { FileNotFoundError } from "../FileNotFoundError";
 import { IReadOptions, StorageEngine } from "../StorageEngine";
@@ -118,29 +120,23 @@ export function storageEngineTestSuite(
 			});
 
 			test("emits FileNotFoundError when file does not exist", async () => {
-				const promise = new Promise((resolve, reject) => {
-					const stream = sto.createReadStream("THIS_FILE_SHOULD_NOT_EXIST");
-					stream.on("error", reject);
-					stream.on("close", resolve);
-				});
+				const stream = sto.createReadStream("THIS_FILE_SHOULD_NOT_EXIST");
 
-				return expect(promise).rejects.toBeInstanceOf(FileNotFoundError);
+				return expect(finished(stream)).rejects.toBeInstanceOf(
+					FileNotFoundError
+				);
 			});
 		});
 
 		describe("createWriteStream()", () => {
 			test("appends data to end of file", async () => {
 				const stream = sto.createWriteStream("stream.txt");
-				const promise = new Promise((resolve, reject) => {
-					stream.on("close", resolve);
-					stream.on("error", reject);
-				});
 
 				stream.write("012345");
 				stream.write("abcdef");
 				stream.end();
 
-				await promise;
+				await finished(stream);
 
 				const fileContents = await read("stream.txt");
 

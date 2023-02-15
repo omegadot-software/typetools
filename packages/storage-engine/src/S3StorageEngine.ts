@@ -237,6 +237,22 @@ export class S3StorageEngine extends StorageEngine {
 	createWriteStream(path: string): Writable {
 		const stream = new PassThrough();
 
+		// According to the nodejs docs, the 'close' event is emitted when the stream and any of its underlying
+		// resources (a file descriptor, for example) have been closed. The event indicates that no more events will be
+		// emitted, and no further computation will occur.
+		//
+		// Although we are internally dealing with a Duplex stream, we are returning a Writable stream.
+		// Therefore, the 'close' event should indicate that the *writable* resource has been closed, i.e. that the
+		// upload has ended.
+		//
+		// The following overrides the emit method to reflect this.
+		const emit = stream.emit.bind(stream);
+		stream.emit = (event, d?) => {
+			// emit returns true if the event had listeners, false otherwise.
+			if (event === "close") return false;
+			return emit(event, d);
+		};
+
 		void (async () => {
 			const upload = new Upload({
 				client: this.s3client,
@@ -256,6 +272,7 @@ export class S3StorageEngine extends StorageEngine {
 			// 	});
 
 			await upload.done();
+			emit("close");
 		})().catch((e) => {
 			assertInstanceof(e, Error);
 			// Destroy streams if the IIFE function causes issues on initialization

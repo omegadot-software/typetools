@@ -25,7 +25,7 @@ describe("S3StorageEngine", () => {
 				accessKeyId: env("S3_ACCESS_KEY"),
 				secretAccessKey: env("S3_SECRET_ACCESS_KEY"),
 				bucket: env("S3_BUCKET"),
-				prefix: "tests",
+				prefix: `tests/storage-engine-s3/${Date.now()}}`,
 			})
 	);
 });
