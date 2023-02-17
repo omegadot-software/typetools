@@ -288,6 +288,14 @@ export class S3StorageEngine extends StorageEngine {
 		return getSignedUrl(this.s3client, getObjectCommand, { expiresIn: 3600 });
 	}
 
+	async getUploadLink(uploadId: string): Promise<string> {
+		const putCommand = new PutObjectCommand({...this.getBaseObject(uploadId)});
+		const presignedUrl = await getSignedUrl(this.s3client, putCommand, {
+			expiresIn: 3600,
+		});
+		return presignedUrl;
+	}
+
 	// Internally used by clone-env
 	async interBucketCopy(
 		src: { fileName: string; bucket: string; prefix: string },
