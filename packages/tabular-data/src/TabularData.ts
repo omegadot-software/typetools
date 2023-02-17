@@ -234,17 +234,14 @@ export class TabularData implements AsyncIterable<readonly number[]> {
 				// See also
 				// https://github.com/nodejs/node/issues/24817
 				// for insight on stream chunk byte alignment.
+				const array: number[] = [];
+				const start = i * this.bytesPerRow;
+				const end = (i + 1) * this.bytesPerRow;
+				for (let j = start; j < end; j += Float64Array.BYTES_PER_ELEMENT) {
+					array.push(buffer.readDoubleLE(j));
+				}
 
-				// Constructing a TypedArray with an ArrayBuffer as the first argument does not create a copy.
-				// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray#description
-				// The length argument is *not* the number of bytes, but the number of elements in the TypedArray!
-				yield Array.from(
-					new Float64Array(
-						buffer.buffer,
-						buffer.byteOffset + i * this.bytesPerRow,
-						this.numColumns()
-					)
-				);
+				yield array;
 			}
 
 			const bytesRead = i * this.bytesPerRow;
