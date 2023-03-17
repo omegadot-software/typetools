@@ -197,6 +197,8 @@ export class FileSystemStorageEngine extends StorageEngine {
 			throw e;
 		}
 	}
+
+	debugOpenStreams(): void {}
 }
 
 function isENOENTError(e: unknown): boolean {

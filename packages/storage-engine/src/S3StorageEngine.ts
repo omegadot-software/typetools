@@ -1,5 +1,6 @@
+import { randomUUID } from "crypto";
 import { normalize } from "path";
-import { PassThrough, Readable, Writable } from "stream";
+import { PassThrough, pipeline, Readable, Writable } from "stream";
 
 import {
 	CopyObjectCommand,
@@ -18,6 +19,13 @@ import { assertDefined, assertInstanceof } from "@omegadot/assert";
 import { FileNotFoundError } from "./FileNotFoundError";
 import { IReadOptions, StorageEngine } from "./StorageEngine";
 
+interface IOpenStreamDescription {
+	type: "read" | "write";
+	path: string;
+
+	stack: string | undefined;
+}
+
 export interface IS3StorageEngineConfig {
 	endpoint: string;
 	region: string;
@@ -32,6 +40,8 @@ export class S3StorageEngine extends StorageEngine {
 	private s3client: S3Client;
 	private readonly bucket: string;
 	private readonly prefix: string;
+
+	private streams = new Map<string, IOpenStreamDescription>();
 
 	constructor({
 		endpoint,
@@ -193,6 +203,12 @@ export class S3StorageEngine extends StorageEngine {
 		options: { start?: number; end?: number } = {}
 	): Readable {
 		const stream = new PassThrough();
+		this.addStream(stream, path, "read");
+
+		stream.on("error", (e) => console.log("Read stream:", e));
+		stream.on("pause", () => console.log("Read stream pause"));
+		stream.on("resume", () => console.log("Read stream resume"));
+		stream.on("end", () => console.log("Read stream end"));
 
 		void (async () => {
 			const { start = 0, end } = options;
@@ -212,7 +228,12 @@ export class S3StorageEngine extends StorageEngine {
 				// See: https://stackoverflow.com/a/69803144
 				assertInstanceof(response.Body, Readable);
 				// response.Body.readableHighWaterMark = 2
-				response.Body.pipe(stream);
+				//response.Body.pipe(stream);
+				pipeline(response.Body, stream, (err) => {
+					if (err) {
+						console.log("createReadStream Error", err);
+					}
+				});
 			} catch (e) {
 				// console.log(e);
 				if (
@@ -236,6 +257,7 @@ export class S3StorageEngine extends StorageEngine {
 
 	createWriteStream(path: string): Writable {
 		const stream = new PassThrough();
+		this.addStream(stream, path, "write");
 
 		// According to the nodejs docs, the 'close' event is emitted when the stream and any of its underlying
 		// resources (a file descriptor, for example) have been closed. The event indicates that no more events will be
@@ -289,7 +311,9 @@ export class S3StorageEngine extends StorageEngine {
 	}
 
 	async getUploadLink(uploadId: string): Promise<string> {
-		const putCommand = new PutObjectCommand({...this.getBaseObject(uploadId)});
+		const putCommand = new PutObjectCommand({
+			...this.getBaseObject(uploadId),
+		});
 		const presignedUrl = await getSignedUrl(this.s3client, putCommand, {
 			expiresIn: 3600,
 		});
@@ -327,5 +351,29 @@ export class S3StorageEngine extends StorageEngine {
 			Bucket: this.bucket,
 			Key: this.getKey(fileName),
 		};
+	}
+
+	public debugOpenStreams() {
+		console.log(
+			"S3 Debug" +
+				new Date().toString() +
+				":\n" +
+				JSON.stringify(Array.from(this.streams.values()), undefined, 4)
+		);
+	}
+
+	addStream(stream: Readable, path: string, type: "read" | "write") {
+		const id = randomUUID();
+		const stack = new Error().stack;
+
+		this.streams.set(id, { path, type, stack });
+
+		stream.on("error", (e) => {
+			console.log(e);
+		});
+
+		stream.on("close", () => {
+			this.streams.delete(id);
+		});
 	}
 }

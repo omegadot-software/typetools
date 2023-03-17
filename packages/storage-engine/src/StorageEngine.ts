@@ -78,4 +78,9 @@ export abstract class StorageEngine {
 	readFileStream(path: string): Readable {
 		return this.createReadStream(path);
 	}
+
+	/**
+	 * Helper function to debug open streams
+	 */
+	abstract debugOpenStreams(): void;
 }
