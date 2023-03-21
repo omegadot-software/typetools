@@ -1,5 +1,5 @@
 import { normalize } from "path";
-import { PassThrough, Readable, Writable } from "stream";
+import { PassThrough, pipeline, Readable, Writable } from "stream";
 
 import {
 	CopyObjectCommand,
@@ -211,8 +211,23 @@ export class S3StorageEngine extends StorageEngine {
 				// node context (and not in a browser)
 				// See: https://stackoverflow.com/a/69803144
 				assertInstanceof(response.Body, Readable);
-				// response.Body.readableHighWaterMark = 2
-				response.Body.pipe(stream);
+
+				stream.destroy = (e?: Error) => {
+					// Forward destroy calls to readable
+					(response.Body as Readable).destroy(e);
+					return stream;
+				};
+
+				pipeline(response.Body, stream, (err) => {
+					if (err) {
+						if (err.code !== "ERR_STREAM_PREMATURE_CLOSE") {
+							// Silently swallow the Premature close error as this error is caused
+							// (among others things?) by consuming a stream partially and then
+							// calling destroy()
+							throw err;
+						}
+					}
+				});
 			} catch (e) {
 				// console.log(e);
 				if (
@@ -289,7 +304,9 @@ export class S3StorageEngine extends StorageEngine {
 	}
 
 	async getUploadLink(uploadId: string): Promise<string> {
-		const putCommand = new PutObjectCommand({...this.getBaseObject(uploadId)});
+		const putCommand = new PutObjectCommand({
+			...this.getBaseObject(uploadId),
+		});
 		const presignedUrl = await getSignedUrl(this.s3client, putCommand, {
 			expiresIn: 3600,
 		});
