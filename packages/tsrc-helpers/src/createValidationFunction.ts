@@ -18,6 +18,7 @@ export function createValidationFunction(schema: object): IValidateFn {
 	const validateSchema = ajv.compile(schema);
 
 	return function validate(obj: object) {
+		// eslint-disable-next-line @typescript-eslint/no-floating-promises
 		validateSchema(obj);
 		if (!validateSchema.errors) return [];
 		return validateSchema.errors.map(normalizeAJVError);

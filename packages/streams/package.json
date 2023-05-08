@@ -1,0 +1,21 @@
+{
+	"name": "@omegadot/streams",
+	"version": "0.1.0",
+	"author": "Hendrik Gossler <h.gossler@omegadot.software>",
+	"license": "ISC",
+	"exports": {
+		"import": "./dist/src/index.js",
+		"require": "./dist/cjs/index.js"
+	},
+	"types": "./dist/src/index.d.ts",
+	"files": [
+		"dist"
+	],
+	"scripts": {
+		"generate-barrels": "run -T barrelsby --delete -e src/__tests__ -d src"
+	},
+	"dependencies": {
+		"minipass": "^5.0.0",
+		"minipass-pipeline": "1.2.4"
+	}
+}

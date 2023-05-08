@@ -1,0 +1,14 @@
+{
+	"extends": "./tsconfig.json",
+	"files": [],
+	"include": [],
+	"references": [
+		{ "path": "./packages/assert/tsconfig-build.json" },
+		{ "path": "./packages/fs/tsconfig-build.json" },
+		{ "path": "./packages/storage-engine/tsconfig-build.json" },
+		{ "path": "./packages/streams/tsconfig-build.json" },
+		{ "path": "./packages/tabular-data/tsconfig-build.json" },
+		{ "path": "./packages/tsrc/tsconfig-build.json" },
+		{ "path": "./packages/tsrc-helpers/tsconfig-build.json" }
+	]
+}

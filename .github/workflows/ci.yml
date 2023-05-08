@@ -1,0 +1,42 @@
+name: Continuous Integration
+
+on:
+  push:
+    # Run only on branches that do not include a slash. Avoids running the pipeline for build artifact commits.
+    branches: "*"
+
+jobs:
+  build-and-lint:
+    name: Build and Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Use Node.js ${{ inputs.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ inputs.node-version }}
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Build
+        run: yarn build
+
+      # There are eslint rules that rely on types being present. Because the tsrc package depends on fs, that package
+      # must be built before eslint can run. We therefore build the project before linting.
+      - name: Run ESLint
+        run: yarn lint
+
+  code-style:
+    name: Check code style
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Use Node.js ${{ inputs.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ inputs.node-version }}
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Run prettier
+        run: yarn code-style-check

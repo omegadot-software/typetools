@@ -12,17 +12,26 @@ program
 	.name("ts-runtime-checks")
 	// .description('')
 	// .version('1')
-	.requiredOption("-d, --dir <string>", "Path to directory where types are located")
+	.requiredOption(
+		"-d, --dir <string>",
+		"Path to directory where types are located"
+	)
 	.requiredOption(
 		"-o, --outDir <string>",
 		"Path to directory where generated files should be written"
 	)
 	.parse(process.argv);
 
-if (program.args.length === 0) throw new Error("Must specify at least one type");
+if (program.args.length === 0)
+	throw new Error("Must specify at least one type");
 
 async function template(templateName: string) {
-	const template = await readUTF8File([__dirname, "../templates", templateName]);
+	const template = await readUTF8File([
+		__dirname,
+		"../templates",
+		templateName,
+	]);
+	// eslint-disable-next-line @typescript-eslint/no-implied-eval
 	return new Function("type", `return \`${template}\``) as (type: {
 		name: string;
 		relativePath: string;
@@ -35,14 +44,15 @@ const files: string[] = program.args //(program.args.length > 0 ? program.args :
 	.map((file) => (file.endsWith(".ts") ? file : `${file}.ts`));
 
 // The directory where the types are located (absolute path)
-const typesDir = resolve(process.cwd(), program.dir);
+const typesDir = resolve(process.cwd(), program.dir as string);
 
 // The directory where the generated files will be written to (absolute path)
-const outDir = resolve(process.cwd(), program.outDir);
+const outDir = resolve(process.cwd(), program.outDir as string);
 
 // Potential solution to hard coded path: find-up package
 // const tsconfig = resolve(__dirname, "../../../config/tsconfig.json");
 
+// eslint-disable-next-line @typescript-eslint/no-floating-promises
 (async () => {
 	const genAssert = await template("assert.txt");
 	const genCast = await template("cast.txt");
@@ -82,7 +92,11 @@ const outDir = resolve(process.cwd(), program.outDir);
 					// The list of types for which runtime checks should be generated can thus be inferred from the list of
 					// files without the file extension.
 					name: typeName,
-					schema: JSON.stringify(createGenerator(config).createSchema(typeName), null, 2),
+					schema: JSON.stringify(
+						createGenerator(config).createSchema(typeName),
+						null,
+						2
+					),
 				};
 			} catch (error) {
 				if (error instanceof BaseError) {
@@ -97,8 +111,8 @@ const outDir = resolve(process.cwd(), program.outDir);
 	// Create output directory structure
 	try {
 		await mkdirp([outDir, "schema"]);
-	} catch (e: any) {
-		throw new VError(e, `Could not create output dir`);
+	} catch (e) {
+		throw new VError(e as Error, `Could not create output dir`);
 	}
 
 	await Promise.all([
@@ -107,11 +121,17 @@ const outDir = resolve(process.cwd(), program.outDir);
 			writeFile([outDir, "schema", `${type.name}.schema.json`], type.schema)
 		),
 		// Generate assert functions
-		...typeList.map((type) => writeFile([outDir, `assert${type.name}.ts`], genAssert(type))),
+		...typeList.map((type) =>
+			writeFile([outDir, `assert${type.name}.ts`], genAssert(type))
+		),
 		// Generate cast functions
-		...typeList.map((type) => writeFile([outDir, `cast${type.name}.ts`], genCast(type))),
+		...typeList.map((type) =>
+			writeFile([outDir, `cast${type.name}.ts`], genCast(type))
+		),
 		// Generate is functions
-		...typeList.map((type) => writeFile([outDir, `is${type.name}.ts`], genIs(type))),
+		...typeList.map((type) =>
+			writeFile([outDir, `is${type.name}.ts`], genIs(type))
+		),
 
 		// Generate validate functions.
 		// Only generated if they do not already exist.
@@ -121,14 +141,17 @@ const outDir = resolve(process.cwd(), program.outDir);
 			try {
 				const fileStats = await stat(outPath);
 				if (fileStats.isDirectory()) {
-					// eslint-disable-next-line @typescript-eslint/return-await
 					return Promise.reject(new Error(`"${outPath}" is a directory`));
 				}
 				return;
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			} catch (e: any) {
 				// Proceed with file generation if a file does not exist error is encountered.
 				// Rethrow all other errors.
-				if (typeof e.code !== "string" || e.code.indexOf("ENOENT") === -1) throw e;
+				// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-call
+				if (typeof e.code !== "string" || e.code.indexOf("ENOENT") === -1) {
+					throw e;
+				}
 			}
 
 			return writeFile(outPath, genValidate(type));

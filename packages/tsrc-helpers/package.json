@@ -1,17 +1,17 @@
 {
-  "name": "@omegadot/tsrc-helpers",
-  "version": "0.5.0",
-  "author": "Hendrik Gossler <h.gossler@omegadot.software>",
-  "license": "ISC",
-  "type": "module",
-  "main": "dist/src/index.js",
-  "files": [
-    "dist"
-  ],
-  "scripts": {
-    "generate-barrels": "run -T barrelsby --delete -d src"
-  },
-  "dependencies": {
-    "ajv": "^6.10.2"
-  }
+	"name": "@omegadot/tsrc-helpers",
+	"version": "0.5.0",
+	"author": "Hendrik Gossler <h.gossler@omegadot.software>",
+	"license": "ISC",
+	"type": "module",
+	"main": "dist/src/index.js",
+	"files": [
+		"dist"
+	],
+	"scripts": {
+		"generate-barrels": "run -T barrelsby --delete -d src"
+	},
+	"dependencies": {
+		"ajv": "^6.10.2"
+	}
 }

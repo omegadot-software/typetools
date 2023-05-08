@@ -1,21 +1,28 @@
-import {build, BuildOptions} from "esbuild";
+import { build, BuildOptions } from "esbuild";
 
-
-for(const pkg of ["assert", "fs"]) {
-    buildCJS(`packages/${pkg}`)
+for (const pkg of [
+	"assert",
+	"fs",
+	"streams",
+	"storage-engine",
+	"tabular-data",
+]) {
+	buildCJS(`packages/${pkg}`);
 }
 
 function buildCJS(packagePath: string) {
-    const options: BuildOptions = {
-        entryPoints: [`${packagePath}/dist/src/index.js`],
-        bundle: true,
-        sourcemap: true,
-        platform: "node",
-        outdir: `${packagePath}/dist/cjs`,
-    };
+	const options: BuildOptions = {
+		entryPoints: [`${packagePath}/dist/src/index.js`],
+		bundle: true,
+		sourcemap: true,
+		platform: "node",
+		// Excludes all dependencies from the bundle
+		// https://esbuild.github.io/api/#packages
+		packages: "external",
+		outdir: `${packagePath}/dist/cjs`,
+	};
 
-    build(options).catch(() => {
-        process.exit(1);
-    });
+	build(options).catch(() => {
+		process.exit(1);
+	});
 }
-

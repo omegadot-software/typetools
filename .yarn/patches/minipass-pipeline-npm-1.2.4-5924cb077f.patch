@@ -1,0 +1,172 @@
+diff --git a/.idea/.gitignore b/.idea/.gitignore
+new file mode 100644
+index 0000000000000000000000000000000000000000..13566b81b018ad684f3a35fee301741b2734c8f4
+--- /dev/null
++++ b/.idea/.gitignore
+@@ -0,0 +1,8 @@
++# Default ignored files
++/shelf/
++/workspace.xml
++# Editor-based HTTP Client requests
++/httpRequests/
++# Datasource local storage ignored files
++/dataSources/
++/dataSources.local.xml
+diff --git a/.idea/modules.xml b/.idea/modules.xml
+new file mode 100644
+index 0000000000000000000000000000000000000000..d9fb14e4d06a030cba3cd105982c4f196e0718a0
+--- /dev/null
++++ b/.idea/modules.xml
+@@ -0,0 +1,8 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<project version="4">
++  <component name="ProjectModuleManager">
++    <modules>
++      <module fileurl="file://$PROJECT_DIR$/.idea/user.iml" filepath="$PROJECT_DIR$/.idea/user.iml" />
++    </modules>
++  </component>
++</project>
+\ No newline at end of file
+diff --git a/.idea/user.iml b/.idea/user.iml
+new file mode 100644
+index 0000000000000000000000000000000000000000..bc2cd87409057301f546d83bd548111b9a241cb1
+--- /dev/null
++++ b/.idea/user.iml
+@@ -0,0 +1,8 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<module type="CPP_MODULE" version="4">
++  <component name="NewModuleRootManager">
++    <content url="file://$MODULE_DIR$" />
++    <orderEntry type="inheritedJdk" />
++    <orderEntry type="sourceFolder" forTests="false" />
++  </component>
++</module>
+\ No newline at end of file
+diff --git a/.idea/workspace.xml b/.idea/workspace.xml
+new file mode 100644
+index 0000000000000000000000000000000000000000..26724d55d49c07ea1a9eaa039b72882edaedc6f1
+--- /dev/null
++++ b/.idea/workspace.xml
+@@ -0,0 +1,62 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<project version="4">
++  <component name="AutoImportSettings">
++    <option name="autoReloadType" value="SELECTIVE" />
++  </component>
++  <component name="CMakePresetLoader"><![CDATA[{
++  "useNewFormat": true
++}]]></component>
++  <component name="CMakeSettings">
++    <configurations>
++      <configuration PROFILE_NAME="Debug" ENABLED="true" CONFIG_NAME="Debug" />
++    </configurations>
++  </component>
++  <component name="ChangeListManager">
++    <list default="true" id="4b4bc717-efc2-4895-bd07-0a36440e018e" name="Changes" comment="" />
++    <option name="SHOW_DIALOG" value="false" />
++    <option name="HIGHLIGHT_CONFLICTS" value="true" />
++    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
++    <option name="LAST_RESOLUTION" value="IGNORE" />
++  </component>
++  <component name="ClangdSettings">
++    <option name="formatViaClangd" value="false" />
++  </component>
++  <component name="MacroExpansionManager">
++    <option name="directoryName" value="y2ldzwli" />
++  </component>
++  <component name="MarkdownSettingsMigration">
++    <option name="stateVersion" value="1" />
++  </component>
++  <component name="ProjectId" id="2OtH5Zm7o5PJ4PznX3Rqd4KNuSH" />
++  <component name="ProjectViewState">
++    <option name="hideEmptyMiddlePackages" value="true" />
++    <option name="showLibraryContents" value="true" />
++  </component>
++  <component name="PropertiesComponent"><![CDATA[{
++  "keyToString": {
++    "RunOnceActivity.OpenProjectViewOnStart": "true",
++    "RunOnceActivity.ShowReadmeOnStart": "true",
++    "RunOnceActivity.cidr.known.project.marker": "true",
++    "WebServerToolWindowFactoryState": "true",
++    "cf.first.check.clang-format": "false",
++    "cidr.known.project.marker": "true",
++    "nodejs_package_manager_path": "npm",
++    "vue.rearranger.settings.migration": "true"
++  }
++}]]></component>
++  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
++  <component name="TaskManager">
++    <task active="true" id="Default" summary="Default task">
++      <changelist id="4b4bc717-efc2-4895-bd07-0a36440e018e" name="Changes" comment="" />
++      <created>1682372775915</created>
++      <option name="number" value="Default" />
++      <option name="presentableId" value="Default" />
++      <updated>1682372775915</updated>
++      <workItem from="1682372777651" duration="73000" />
++    </task>
++    <servers />
++  </component>
++  <component name="TypeScriptGeneratedFilesManager">
++    <option name="version" value="3" />
++  </component>
++</project>
+\ No newline at end of file
+diff --git a/index.js b/index.js
+index b94ea14b602befb622e376d5e1cd46819baa5d6c..c9d3df2ccfe43b5e44f93f5d15dee0ef5fdaebfb 100644
+--- a/index.js
++++ b/index.js
+@@ -1,8 +1,8 @@
+-const Minipass = require('minipass')
++const { Minipass } = require('minipass')
+ const EE = require('events')
+ const isStream = s => s && s instanceof EE && (
+-  typeof s.pipe === 'function' || // readable
+-  (typeof s.write === 'function' && typeof s.end === 'function') // writable
++    typeof s.pipe === 'function' || // readable
++    (typeof s.write === 'function' && typeof s.end === 'function') // writable
+ )
+ 
+ const _head = Symbol('_head')
+@@ -15,14 +15,17 @@ const _onData = Symbol('_onData')
+ const _onEnd = Symbol('_onEnd')
+ const _onDrain = Symbol('_onDrain')
+ const _streams = Symbol('_streams')
+-class Pipeline extends Minipass {
++
++exports.Pipeline = class Pipeline extends Minipass {
+   constructor (opts, ...streams) {
+     if (isStream(opts)) {
+       streams.unshift(opts)
+       opts = {}
+     }
+ 
+-    super(opts)
++    // In Minipass version 4 the buffer property was made private,
++    // but the Pipeline subclass needs access to it -> { debugExposeBuffer: true }
++    super({ ...opts, debugExposeBuffer: true });
+     this[_streams] = []
+     if (streams.length)
+       this.push(...streams)
+@@ -64,7 +67,7 @@ class Pipeline extends Minipass {
+   destroy (er) {
+     // set fire to the whole thing.
+     this[_streams].forEach(s =>
+-      typeof s.destroy === 'function' && s.destroy())
++        typeof s.destroy === 'function' && s.destroy())
+     return super.destroy(er)
+   }
+ 
+@@ -117,12 +120,10 @@ class Pipeline extends Minipass {
+   }
+   write (chunk, enc, cb) {
+     return this[_head].write(chunk, enc, cb) &&
+-      (this.flowing || this.buffer.length === 0)
++        (this.flowing || this.buffer.length === 0)
+   }
+   end (chunk, enc, cb) {
+     this[_head].end(chunk, enc, cb)
+     return this
+   }
+ }
+-
+-module.exports = Pipeline
