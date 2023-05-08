@@ -86,6 +86,7 @@ export interface Readable<TOut> extends Events<TOut> {
 	 * Send all output to the stream provided.
 	 *
 	 * @param dest - The stream where incoming data should be passed to.
+	 * @param options - The proxyErrors option forwards errors to the destination stream, i.e. `src.on('error', e => dest.emit('error', e)).pipe(dest)`
 	 */
 	pipe<T extends Writable<TOut>>(
 		dest: T,

@@ -3,6 +3,9 @@ import { pipeline } from "stream/promises";
 import { Readable } from "./createReadable";
 import { Writable } from "./createWritable";
 
+/**
+ * Simple wrapper around node:stream/promises' `pipeline` function that accepts our custom stream types.
+ */
 export function chain<TIn>(
 	head: Readable<TIn>,
 	tail: Writable<TIn>
