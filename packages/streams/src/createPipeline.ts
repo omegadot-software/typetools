@@ -1,9 +1,8 @@
-import { Pipeline } from "minipass-pipeline";
-
 import { async } from "./async";
 import { Duplex } from "./createDuplex";
 import { Readable } from "./createReadable";
 import { Writable } from "./createWritable";
+import { Pipeline } from "./minipass-pipeline";
 
 export function createPipeline<TIn, TOut>(): Duplex<TIn, TOut> & {
 	unshift(readable: Readable<TIn>): void;

@@ -1,9 +1,8 @@
-declare module "minipass-pipeline" {
-	import { Minipass } from "minipass";
-	export class Pipeline extends Minipass {
-		constructor(...streams: any[]);
-	}
+import { Minipass } from "minipass";
+export class Pipeline extends Minipass {
+	constructor(...streams: any[]);
 }
+
 //
 // declare module "stream" {
 // 	import { Duplex, Stream } from "stream";

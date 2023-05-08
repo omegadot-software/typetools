@@ -2262,7 +2262,6 @@ __metadata:
   resolution: "@omegadot/streams@workspace:packages/streams"
   dependencies:
     minipass: ^5.0.0
-    minipass-pipeline: 1.2.4
   languageName: unknown
   linkType: soft
 
@@ -5748,21 +5747,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"minipass-pipeline@npm:1.2.4, minipass-pipeline@npm:^1.2.2, minipass-pipeline@npm:^1.2.4":
+"minipass-pipeline@npm:^1.2.2, minipass-pipeline@npm:^1.2.4":
   version: 1.2.4
   resolution: "minipass-pipeline@npm:1.2.4"
   dependencies:
     minipass: ^3.0.0
   checksum: b14240dac0d29823c3d5911c286069e36d0b81173d7bdf07a7e4a91ecdef92cdff4baaf31ea3746f1c61e0957f652e641223970870e2353593f382112257971b
-  languageName: node
-  linkType: hard
-
-"minipass-pipeline@patch:minipass-pipeline@npm:1.2.4#.yarn/patches/minipass-pipeline-npm-1.2.4-5924cb077f.patch::locator=%40omegadot%2Ftypetools%40workspace%3A.":
-  version: 1.2.4
-  resolution: "minipass-pipeline@patch:minipass-pipeline@npm%3A1.2.4#.yarn/patches/minipass-pipeline-npm-1.2.4-5924cb077f.patch::version=1.2.4&hash=82d1df&locator=%40omegadot%2Ftypetools%40workspace%3A."
-  dependencies:
-    minipass: ^3.0.0
-  checksum: 77d1a1f0c947836e875126646e780811aaa5b1f14dc9ba594e719aaa4dd61fd032c248651a247f11bbe27c14b61b13a33d2169171c8640e855885be7568ab384
   languageName: node
   linkType: hard
 

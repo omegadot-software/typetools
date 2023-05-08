@@ -44,9 +44,5 @@
 	"prettier": {
 		"useTabs": true
 	},
-	"packageManager": "yarn@3.2.0",
-	"resolutions": {
-		"minipass-pipeline/minipass": "^5.0.0",
-		"minipass-pipeline@1.2.4": "patch:minipass-pipeline@npm:1.2.4#.yarn/patches/minipass-pipeline-npm-1.2.4-5924cb077f.patch"
-	}
+	"packageManager": "yarn@3.2.0"
 }
