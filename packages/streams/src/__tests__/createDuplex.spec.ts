@@ -1,6 +1,17 @@
 import { createDuplex } from "../createDuplex";
 
 describe("createDuplex", () => {
+	test.skip("passthrough with strings", async () => {
+		const passThrough = createDuplex();
+
+		passThrough.write("a");
+		passThrough.write("b");
+		passThrough.write("c");
+		passThrough.end();
+
+		expect(await passThrough.collect()).toEqual(["a", "b", "c"]);
+	});
+
 	test("transform function that returns data", async () => {
 		const transformStream = createDuplex({
 			transform: (chunk: number) => chunk * 2,
@@ -40,8 +51,6 @@ describe("createDuplex", () => {
 		});
 		const listener = jest.fn();
 		transformStream.on("error", listener);
-
-		// transformStream.on("close", () => console.log("close"));
 
 		transformStream.write("hello");
 

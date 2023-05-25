@@ -1,6 +1,6 @@
 {
 	"name": "@omegadot/storage-engine",
-	"version": "0.3.1",
+	"version": "0.3.2",
 	"author": "Hendrik Gossler <h.gossler@omegadot.software>",
 	"exports": {
 		"import": "./dist/src/index.js",
@@ -20,7 +20,7 @@
 		"@aws-sdk/s3-request-presigner": "^3.264.0",
 		"@omegadot/assert": "^0.2.2",
 		"@omegadot/fs": "^0.2.2",
-		"@omegadot/streams": "^0.1.1"
+		"@omegadot/streams": "^0.1.2"
 	},
 	"devDependencies": {
 		"dotenv": "^16.0.3"

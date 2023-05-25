@@ -27,8 +27,11 @@ export class TabularData implements AsyncIterable<readonly number[]> {
 	private readonly sto: StorageEngine;
 
 	private readonly _numColumns: number;
-	private _numRows: number;
 
+	/**
+	 * The number of rows in the file. Negative if the file does not exist.
+	 */
+	private _numRows: number;
 	/**
 	 *
 	 * @param path - The path to the file to be read. Can be an array, in which case each element of
@@ -62,7 +65,7 @@ export class TabularData implements AsyncIterable<readonly number[]> {
 	): Promise<TabularData> {
 		const completePath = Array.isArray(path) ? resolve(...path) : path;
 
-		let fileSize = 0;
+		let fileSize;
 		try {
 			fileSize = await sto.size(completePath);
 		} catch (e) {
@@ -70,9 +73,12 @@ export class TabularData implements AsyncIterable<readonly number[]> {
 			if (!(e instanceof FileNotFoundError)) throw e;
 		}
 
-		// If the table has no columns, then it cannot contain data and hence there cannot be any rows
+		// If fileSize is undefined, the file does not exist which we signal using a negative number.
+		// If the table has no columns, then it cannot contain data and hence there cannot be any rows.
 		const numRows =
-			numColumns === 0
+			fileSize === undefined
+				? -1
+				: numColumns === 0
 				? 0
 				: fileSize / (Float64Array.BYTES_PER_ELEMENT * numColumns);
 
@@ -161,7 +167,11 @@ export class TabularData implements AsyncIterable<readonly number[]> {
 			TabularData.createTransformStream(numColumns);
 		const b: Writable<Buffer> = sto.createWriteStream(completePath);
 
-		return createPipeline(a, b);
+		a.pipe(b, { proxyErrors: true });
+
+		a.promise = () => b.promise();
+
+		return a;
 	}
 
 	/**
@@ -217,6 +227,7 @@ export class TabularData implements AsyncIterable<readonly number[]> {
 		end: number = this.numRows()
 	): Promise<(readonly number[])[]> {
 		assert(start >= 0, "TabularDataStream.rows: start < 0");
+		if (this.numRows() < 0) throw new FileNotFoundError();
 		if (this.numRows() === 0) return [];
 		assert(start < end, "TabularDataStream.rows: end <= start");
 

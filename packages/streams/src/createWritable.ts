@@ -14,7 +14,11 @@ type Events = EventDef<"error", [Error]> &
 	 * Emitted when the internal buffer empties, and it is again suitable to
 	 * write() into the stream.
 	 */
-	EventDef<"drain", []>;
+	EventDef<"drain", []> &
+	/**
+	 * Emitted after the stream.end() method has been called, and all data has been flushed to the underlying system.
+	 */
+	EventDef<"finish", []>;
 
 export interface Writable<TIn> extends Events {
 	end(data?: TIn): this;

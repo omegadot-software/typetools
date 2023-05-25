@@ -272,23 +272,26 @@ export class S3StorageEngine extends StorageEngine {
 
 		// The following overrides make duplex.promise() resolve when the upload has completed,
 		// not immediately when the caller has called end().
-		const promise = duplex.promise.bind(duplex);
-		duplex.promise = () => {
-			return Promise.all([promise(), done])
-				.then(() => {
-					// According to the nodejs docs, the 'close' event is emitted when the stream and any of its underlying
-					// resources (a file descriptor, for example) have been closed. The event indicates that no more events will be
-					// emitted, and no further computation will occur.
-					duplex.emit("close");
-				})
-				.catch((e) => {
-					assertInstanceof(e, Error);
-					// Destroy streams if the IIFE function causes issues on initialization
-					// caused while setting up the stream (for example if the S3 invocation causes errors)
-					duplex.destroy(e);
-					throw e;
-				});
-		};
+		duplex.promise = () =>
+			Promise.race([
+				new Promise((resolve, reject) => {
+					duplex.on("error", reject);
+				}),
+				done
+					.then(() => {
+						// According to the nodejs docs, the 'close' event is emitted when the stream and any of its underlying
+						// resources (a file descriptor, for example) have been closed. The event indicates that no more events will be
+						// emitted, and no further computation will occur.
+						duplex.emit("close");
+					})
+					.catch((e) => {
+						assertInstanceof(e, Error);
+						// Destroy streams if the IIFE function causes issues on initialization
+						// caused while setting up the stream (for example if the S3 invocation causes errors)
+						duplex.destroy(e);
+						throw e;
+					}),
+			]).then();
 
 		return duplex;
 	}

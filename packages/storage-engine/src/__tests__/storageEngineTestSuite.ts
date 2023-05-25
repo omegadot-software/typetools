@@ -143,6 +143,20 @@ export function storageEngineTestSuite(
 				expect(fileContents).toBe("012345abcdef");
 			});
 
+			test("emits 'finish' event to signal that all data has been flushed to the underlying system", async () => {
+				const stream = sto.createWriteStream("stream.txt");
+
+				const promise = new Promise<void>((resolve) =>
+					stream.on("finish", resolve)
+				);
+
+				stream.write(Buffer.from("012345"));
+				stream.write(Buffer.from("abcdef"));
+				stream.end();
+
+				await promise;
+			});
+
 			test("returns false on write and emits drain to resume stream", async () => {
 				const writable = sto.createWriteStream("drain");
 

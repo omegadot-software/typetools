@@ -2242,7 +2242,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@omegadot/storage-engine@^0.3.0, @omegadot/storage-engine@workspace:packages/storage-engine":
+"@omegadot/storage-engine@^0.3.2, @omegadot/storage-engine@workspace:packages/storage-engine":
   version: 0.0.0-use.local
   resolution: "@omegadot/storage-engine@workspace:packages/storage-engine"
   dependencies:
@@ -2252,12 +2252,12 @@ __metadata:
     "@aws-sdk/s3-request-presigner": ^3.264.0
     "@omegadot/assert": ^0.2.2
     "@omegadot/fs": ^0.2.2
-    "@omegadot/streams": ^0.1.0
+    "@omegadot/streams": ^0.1.2
     dotenv: ^16.0.3
   languageName: unknown
   linkType: soft
 
-"@omegadot/streams@^0.1.0, @omegadot/streams@workspace:packages/streams":
+"@omegadot/streams@^0.1.2, @omegadot/streams@workspace:packages/streams":
   version: 0.0.0-use.local
   resolution: "@omegadot/streams@workspace:packages/streams"
   dependencies:
@@ -2269,8 +2269,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@omegadot/tabular-data@workspace:packages/tabular-data"
   dependencies:
-    "@omegadot/storage-engine": ^0.3.0
-    "@omegadot/streams": ^0.1.0
+    "@omegadot/storage-engine": ^0.3.2
+    "@omegadot/streams": ^0.1.2
   languageName: unknown
   linkType: soft
 

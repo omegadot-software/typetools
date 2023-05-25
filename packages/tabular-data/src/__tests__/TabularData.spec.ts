@@ -3,15 +3,49 @@ import {
 	FileNotFoundError,
 	FileSystemStorageEngine,
 	StorageEngine,
+	S3StorageEngine,
 } from "@omegadot/storage-engine";
+import { createDuplex, Writable } from "@omegadot/streams";
+import * as dotenv from "dotenv";
 
 import { TabularData } from "../TabularData";
 
+if (process.env.NODE_ENV !== "production") {
+	dotenv.config();
+}
+
+function env(key: string): string {
+	const val = process.env[key];
+	if (!val) {
+		throw new Error(`Required environment variable "${key}" is not defined`);
+	}
+	return val;
+}
+
 describe("TabularData", () => {
+	function getStorageEngine() {
+		return new S3StorageEngine({
+			endpoint: env("S3_ENDPOINT"),
+			region: env("S3_REGION"),
+			accessKeyId: env("S3_ACCESS_KEY"),
+			secretAccessKey: env("S3_SECRET_ACCESS_KEY"),
+			bucket: env("S3_BUCKET"),
+			prefix: `tests/tabular-data/${Date.now()}`,
+		});
+	}
+
 	async function setupWithNewFile() {
 		const filename = "new-file";
 		const tmpDir = await mkdirTmp();
 		const sto: StorageEngine = new FileSystemStorageEngine(tmpDir);
+		// const sto: StorageEngine = new S3StorageEngine({
+		// 	endpoint: env("S3_ENDPOINT"),
+		// 	region: env("S3_REGION"),
+		// 	accessKeyId: env("S3_ACCESS_KEY"),
+		// 	secretAccessKey: env("S3_SECRET_ACCESS_KEY"),
+		// 	bucket: env("S3_BUCKET"),
+		// 	prefix: `tests/tabular-data/${Date.now()}`,
+		// });
 
 		return {
 			tmpDir,
@@ -23,13 +57,13 @@ describe("TabularData", () => {
 		};
 	}
 
-	test("empty file has row count of zero", async () => {
+	test("empty file has row count of -1", async () => {
 		const filename = "new-file";
 		const sto: StorageEngine = new FileSystemStorageEngine(await mkdirTmp());
 
 		const td = await TabularData.open(sto, filename, 1);
 
-		expect(td.numRows()).toBe(0);
+		expect(td.numRows()).toBe(-1);
 	});
 
 	test("file size is correct", async () => {
@@ -42,6 +76,34 @@ describe("TabularData", () => {
 		await writable.promise();
 
 		expect(await sto.size(filename)).toBe(9 * Float64Array.BYTES_PER_ELEMENT);
+	});
+
+	test("write stream resolves promise when storage engine writable stream has resolved", async () => {
+		let resolvePromise!: () => void;
+
+		const sto = {
+			createWriteStream(path: string): Writable<Buffer> {
+				const mock = createDuplex();
+				mock.promise = () =>
+					new Promise<void>((resolve) => {
+						resolvePromise = resolve;
+					});
+				return mock;
+			},
+		} as StorageEngine;
+
+		const writable = TabularData.createWriteStream(sto, "test");
+
+		writable.write([1, 2, 3]);
+		writable.write([1, 2, 3]);
+		writable.end([1, 2, 3]);
+
+		const promise = writable.promise();
+
+		expect(resolvePromise).toBeDefined();
+
+		resolvePromise();
+		await promise;
 	});
 
 	test("append rows and read individual rows", async () => {
@@ -156,52 +218,26 @@ describe("TabularData", () => {
 		expect(fn).not.toHaveBeenCalled();
 	});
 
-	// test.only("aborting iteration closes underlying file descriptor", async () => {
-	// 	const { writable, sto, tmpDir, filename } = await setupWithNewFile();
-	//
-	// 	const path = tmpDir + "/" + filename;
-	//
-	// 	async function openFiles() {
-	// 		const [results] = await lsof();
-	//
-	// 		return results.files.filter((file) => file.name?.endsWith(path)).length;
-	// 	}
-	//
-	// 	expect(await openFiles()).toBe(1);
-	//
-	// 	writable.write([1, 2, 3]);
-	// 	writable.write([4, 5, 6]);
-	// 	writable.write([7, 8, 9]);
-	// 	writable.end();
-	// 	await writable.promise();
-	//
-	// 	await sto.rename(filename, "test");
-	//
-	// 	expect(await openFiles()).toBe(0);
-	//
-	// 	const td = TabularData.createReadStream(sto, "test", 3);
-	// 	expect(await openFiles()).toBe(1);
-	// 	// const td = await TabularData.open(sto, filename, 3);
-	// 	for await (const row of td) {
-	// 		// expect(await openFiles()).toBe(1);
-	// 		// console.log(results.files.filter((file) => file.name?.endsWith("test")));
-	// 		// expect(await openFiles()).toBe(1);
-	// 	}
-	//
-	// 	expect(await openFiles()).toBe(0);
-	// });
+	test("get rows from non-existing file", async () => {
+		const sto = getStorageEngine();
+
+		const td = await TabularData.open(sto, "not-a-file", 6);
+
+		return expect(() => td.rows()).rejects.toBeInstanceOf(FileNotFoundError);
+	});
 
 	describe("errors", () => {
 		test("destroys stream when calling `write()` with incorrect row when no callback is provided", async () => {
 			const { writable } = await setupWithNewFile();
 
-			const p = writable.promise();
+			const p = expect(writable.promise()).rejects.toThrowError(/columns/);
 
 			// First call defines number of columns
 			writable.write([1, 2, 3]);
 			// Add a row with 1 value instead of 3
 			writable.write([1]);
-			await expect(p).rejects.toThrowError(/columns/);
+
+			await p;
 		});
 	});
 });

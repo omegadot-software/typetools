@@ -1,6 +1,6 @@
 {
 	"name": "@omegadot/tabular-data",
-	"version": "0.2.1",
+	"version": "0.2.2",
 	"author": "Hendrik Gossler <h.gossler@omegadot.software>",
 	"license": "ISC",
 	"exports": {
@@ -15,7 +15,7 @@
 		"generate-barrels": "run -T barrelsby --delete -e __tests__ -d src"
 	},
 	"dependencies": {
-		"@omegadot/storage-engine": "^0.3.1",
-		"@omegadot/streams": "^0.1.1"
+		"@omegadot/storage-engine": "^0.3.2",
+		"@omegadot/streams": "^0.1.2"
 	}
 }
