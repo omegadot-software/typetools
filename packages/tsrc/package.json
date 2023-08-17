@@ -1,6 +1,6 @@
 {
 	"name": "@omegadot/tsrc",
-	"version": "0.5.0",
+	"version": "0.5.1",
 	"author": "Hendrik Gossler",
 	"license": "UNLICENSED",
 	"bin": "dist/bin/generate.js",
