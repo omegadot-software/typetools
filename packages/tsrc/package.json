@@ -1,12 +1,11 @@
 {
 	"name": "@omegadot/tsrc",
-	"version": "0.5.1",
+	"version": "0.5.2",
 	"author": "Hendrik Gossler",
 	"license": "UNLICENSED",
 	"bin": "dist/bin/generate.js",
 	"files": [
-		"dist",
-		"templates"
+		"dist"
 	],
 	"scripts": {
 		"prepublishOnly": "yarn build"

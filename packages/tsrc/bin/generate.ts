@@ -1,8 +1,6 @@
-#!/usr/bin/env ts-node
-
 import { relative, resolve } from "path";
 
-import { mkdirp, readUTF8File, stat, writeFile } from "@omegadot/fs";
+import { mkdirp, stat, writeFile } from "@omegadot/fs";
 import program from "commander";
 import { BaseError, Config, formatError } from "ts-json-schema-generator";
 import { createGenerator } from "ts-json-schema-generator/dist/factory/generator";
@@ -25,19 +23,6 @@ program
 if (program.args.length === 0)
 	throw new Error("Must specify at least one type");
 
-async function template(templateName: string) {
-	const template = await readUTF8File([
-		__dirname,
-		"../templates",
-		templateName,
-	]);
-	// eslint-disable-next-line @typescript-eslint/no-implied-eval
-	return new Function("type", `return \`${template}\``) as (type: {
-		name: string;
-		relativePath: string;
-	}) => string;
-}
-
 // Generate files for all types per default
 const files: string[] = program.args //(program.args.length > 0 ? program.args : ['*'])
 	// Convert type names to file names
@@ -54,11 +39,6 @@ const outDir = resolve(process.cwd(), program.outDir as string);
 
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
 (async () => {
-	const genAssert = await template("assert.txt");
-	const genCast = await template("cast.txt");
-	const genIs = await template("is.txt");
-	const genValidate = await template("validate.txt");
-
 	// Get directory entries and include only those with a .ts extension
 	const typeList =
 		// (await readdir(typesDir))
@@ -122,15 +102,15 @@ const outDir = resolve(process.cwd(), program.outDir as string);
 		),
 		// Generate assert functions
 		...typeList.map((type) =>
-			writeFile([outDir, `assert${type.name}.ts`], genAssert(type))
+			writeFile([outDir, `assert${type.name}.ts`], assert(type))
 		),
 		// Generate cast functions
 		...typeList.map((type) =>
-			writeFile([outDir, `cast${type.name}.ts`], genCast(type))
+			writeFile([outDir, `cast${type.name}.ts`], cast(type))
 		),
 		// Generate is functions
 		...typeList.map((type) =>
-			writeFile([outDir, `is${type.name}.ts`], genIs(type))
+			writeFile([outDir, `is${type.name}.ts`], is(type))
 		),
 
 		// Generate validate functions.
@@ -154,7 +134,67 @@ const outDir = resolve(process.cwd(), program.outDir as string);
 				}
 			}
 
-			return writeFile(outPath, genValidate(type));
+			return writeFile(outPath, validate(type));
 		}),
 	]);
 })();
+
+interface Type {
+	name: string;
+	relativePath: string;
+}
+
+function assert(type: Type) {
+	return `/**
+ * Generated file. Do not edit!
+ */
+/* eslint-disable */
+import { ${type.name} } from "${type.relativePath}";
+import { validate${type.name} } from "./validate${type.name}";
+
+export function assert${type.name}(arg: any): asserts arg is ${type.name} {
+	const errors = validate${type.name}(arg);
+	if(errors.length > 0) throw new Error("Cannot convert to type ${type.name}: " + errors[0].message);
+}
+`;
+}
+
+function cast(type: Type) {
+	return `/**
+ * Generated file. Do not edit!
+ */
+/* eslint-disable */
+import { ${type.name} } from "${type.relativePath}";
+import { assert${type.name} } from "./assert${type.name}";
+
+export function cast${type.name}(arg: any): ${type.name} {
+	assert${type.name}(arg);
+	return arg;
+}
+`;
+}
+
+function is(type: Type) {
+	return `/**
+ * Generated file. Do not edit!
+ */
+/* eslint-disable */
+import { ${type.name} } from "${type.relativePath}";
+import { validate${type.name} } from "./validate${type.name}";
+
+export function is${type.name}(arg: any): arg is ${type.name} {
+	return validate${type.name}(arg).length == 0;
+}
+`;
+}
+
+function validate(type: Type) {
+	return `/**
+ * Generated stub. Edit this file if needed.
+ */
+import { createValidationFunction } from "@omegadot/tsrc-helpers";
+import schema from "./schema/${type.name}.schema.json";
+
+export const validate${type.name} = createValidationFunction(schema);
+`;
+}
