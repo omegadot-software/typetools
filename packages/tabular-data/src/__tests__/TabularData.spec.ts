@@ -82,6 +82,7 @@ describe("TabularData", () => {
 		let resolvePromise!: () => void;
 
 		const sto = {
+			// eslint-disable-next-line @typescript-eslint/no-unused-vars
 			createWriteStream(path: string): Writable<Buffer> {
 				const mock = createDuplex();
 				mock.promise = () =>
