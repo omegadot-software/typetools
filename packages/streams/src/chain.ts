@@ -1,4 +1,4 @@
-import { pipeline } from "stream/promises";
+import { pipeline } from "node:stream/promises";
 
 import { Readable } from "./createReadable";
 import { Writable } from "./createWritable";

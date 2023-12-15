@@ -1,4 +1,4 @@
-import { readdir as readdirFs } from "fs/promises";
+import { readdir as readdirFs } from "node:fs/promises";
 
 import { normalizePath, PathArg } from "./private/normalizePath";
 

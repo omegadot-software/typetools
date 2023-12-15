@@ -1,5 +1,5 @@
-import { promises } from "fs";
-import type { FileHandle } from "fs/promises";
+import { promises } from "node:fs";
+import type { FileHandle } from "node:fs/promises";
 
 import {
 	IRefreshableTimeout,

@@ -1,4 +1,4 @@
-import { EventEmitter } from "events";
+import { EventEmitter } from "node:events";
 
 export interface EventDef<TEvent extends string, TPayload extends any[]>
 	extends EventEmitter {

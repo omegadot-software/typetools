@@ -1,4 +1,4 @@
-import { writeFile as writeFileFs } from "fs/promises";
+import { writeFile as writeFileFs } from "node:fs/promises";
 
 import { normalizePath, PathArg } from "./private/normalizePath";
 
