@@ -1,4 +1,4 @@
-import assert from "assert";
+import assert from "node:assert";
 
 /**
  * Asserts that t is not undefined

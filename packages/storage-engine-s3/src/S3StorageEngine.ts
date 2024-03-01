@@ -1,6 +1,6 @@
-import { Buffer } from "buffer";
-import { normalize } from "path";
-import { Readable as NodeReadable } from "stream";
+import { Buffer } from "node:buffer";
+import { normalize } from "node:path";
+import { Readable as NodeReadable } from "node:stream";
 
 import {
 	CopyObjectCommand,

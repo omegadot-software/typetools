@@ -1,7 +1,7 @@
-import fs from "fs";
-import { FileHandle, readFile, rename, rm, writeFile } from "fs/promises";
+import fs from "node:fs";
+import { FileHandle, readFile, rename, rm, writeFile } from "node:fs/promises";
+import { cwd } from "node:process";
 import { Readable as NodeReadable } from "node:stream";
-import { cwd } from "process";
 
 import { stat } from "@omegadot/fs";
 import {

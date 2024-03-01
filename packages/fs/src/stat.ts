@@ -1,4 +1,4 @@
-import { stat as statFs } from "fs/promises";
+import { stat as statFs } from "node:fs/promises";
 
 import { normalizePath, PathArg } from "./private/normalizePath";
 

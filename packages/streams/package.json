@@ -15,6 +15,7 @@
 		"generate-barrels": "run -T barrelsby --delete -e src/__tests__ -d src"
 	},
 	"dependencies": {
+		"@omegadot/assert": "^0.2.3",
 		"minipass": "^5.0.0"
 	}
 }
