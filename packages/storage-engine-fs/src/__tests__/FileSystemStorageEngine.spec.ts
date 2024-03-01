@@ -1,6 +1,6 @@
 import { mkdirTmp } from "@omegadot/fs";
+import { storageEngineTestSuite } from "@omegadot/storage-engine";
 
-import { storageEngineTestSuite } from "./storageEngineTestSuite";
 import { FileSystemStorageEngine } from "../FileSystemStorageEngine";
 
 describe("FileSystemStorageEngine", () => {

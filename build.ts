@@ -5,6 +5,8 @@ for (const pkg of [
 	"fs",
 	"streams",
 	"storage-engine",
+	"storage-engine-fs",
+	"storage-engine-s3",
 	"tabular-data",
 ]) {
 	buildCJS(`packages/${pkg}`);

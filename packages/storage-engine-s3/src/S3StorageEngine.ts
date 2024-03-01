@@ -16,14 +16,16 @@ import { Upload } from "@aws-sdk/lib-storage";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { assertDefined, assertInstanceof } from "@omegadot/assert";
 import {
+	FileNotFoundError,
+	IReadOptions,
+	StorageEngine,
+} from "@omegadot/storage-engine";
+import {
 	createDuplex,
 	createPipeline,
 	Readable,
 	Writable,
 } from "@omegadot/streams";
-
-import { FileNotFoundError } from "./FileNotFoundError";
-import { IReadOptions, StorageEngine } from "./StorageEngine";
 
 export interface IS3StorageEngineConfig {
 	endpoint: string;
@@ -213,12 +215,16 @@ export class S3StorageEngine extends StorageEngine {
 					})
 				);
 
+				// Body?.transformToWebStream;
+
 				// Type instanceOf assertion is hopefully justified because this code runs only in a
 				// node context (and not in a browser)
 				// See: https://stackoverflow.com/a/69803144
-				assertInstanceof(Body, NodeReadable);
+				// assertInstanceof(Body, NodeReadable);
+				// console.log(Body instanceof ReadableStream);
 				// eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-member-access
 				(stream as any).unshift(Body);
+				// (stream as any).unshift(createReadable(Body as any));
 
 				// stream.destroy = (e?: Error) => {
 				// 	// Forward destroy calls to readable

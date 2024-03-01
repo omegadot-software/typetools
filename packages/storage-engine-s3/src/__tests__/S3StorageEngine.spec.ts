@@ -1,6 +1,6 @@
+import { storageEngineTestSuite } from "@omegadot/storage-engine";
 import * as dotenv from "dotenv";
 
-import { storageEngineTestSuite } from "./storageEngineTestSuite";
 import { S3StorageEngine } from "../S3StorageEngine";
 
 if (process.env.NODE_ENV !== "production") {

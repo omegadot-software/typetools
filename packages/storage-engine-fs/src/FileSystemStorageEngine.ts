@@ -5,6 +5,11 @@ import { cwd } from "process";
 
 import { stat } from "@omegadot/fs";
 import {
+	FileNotFoundError,
+	IReadOptions,
+	StorageEngine,
+} from "@omegadot/storage-engine";
+import {
 	createPipeline,
 	createWritable,
 	Readable,
@@ -12,9 +17,7 @@ import {
 } from "@omegadot/streams";
 import semver from "semver";
 
-import { FileNotFoundError } from "./FileNotFoundError";
 import { ReusableFileHandle } from "./ReusableFileHandle";
-import { IReadOptions, StorageEngine } from "./StorageEngine";
 
 // Some of this code is not compatible with older NodeJS versions
 // NOT compatible with NodeJS 14

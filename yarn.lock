@@ -2242,7 +2242,34 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@omegadot/storage-engine@^0.3.2, @omegadot/storage-engine@workspace:packages/storage-engine":
+"@omegadot/storage-engine-fs@^0.1.0, @omegadot/storage-engine-fs@workspace:packages/storage-engine-fs":
+  version: 0.0.0-use.local
+  resolution: "@omegadot/storage-engine-fs@workspace:packages/storage-engine-fs"
+  dependencies:
+    "@omegadot/assert": ^0.2.2
+    "@omegadot/fs": ^0.2.2
+    "@omegadot/storage-engine": ^0.4.0
+    "@omegadot/streams": ^0.1.2
+    dotenv: ^16.0.3
+  languageName: unknown
+  linkType: soft
+
+"@omegadot/storage-engine-s3@^0.1.0, @omegadot/storage-engine-s3@workspace:packages/storage-engine-s3":
+  version: 0.0.0-use.local
+  resolution: "@omegadot/storage-engine-s3@workspace:packages/storage-engine-s3"
+  dependencies:
+    "@aws-sdk/abort-controller": ^3.257.0
+    "@aws-sdk/client-s3": ^3.257.0
+    "@aws-sdk/lib-storage": ^3.264.0
+    "@aws-sdk/s3-request-presigner": ^3.264.0
+    "@omegadot/assert": ^0.2.2
+    "@omegadot/storage-engine": ^0.4.0
+    "@omegadot/streams": ^0.1.2
+    dotenv: ^16.0.3
+  languageName: unknown
+  linkType: soft
+
+"@omegadot/storage-engine@^0.4.0, @omegadot/storage-engine@workspace:packages/storage-engine":
   version: 0.0.0-use.local
   resolution: "@omegadot/storage-engine@workspace:packages/storage-engine"
   dependencies:
@@ -2269,7 +2296,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@omegadot/tabular-data@workspace:packages/tabular-data"
   dependencies:
-    "@omegadot/storage-engine": ^0.3.2
+    "@omegadot/storage-engine": ^0.4.0
+    "@omegadot/storage-engine-fs": ^0.1.0
+    "@omegadot/storage-engine-s3": ^0.1.0
     "@omegadot/streams": ^0.1.2
   languageName: unknown
   linkType: soft

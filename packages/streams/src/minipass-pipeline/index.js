@@ -1,5 +1,7 @@
-const { Minipass } = require("minipass");
-const EE = require("events");
+import EE from "node:events";
+
+import { Minipass } from "minipass";
+
 const isStream = (s) =>
 	s &&
 	s instanceof EE &&
@@ -17,7 +19,7 @@ const _onEnd = Symbol("_onEnd");
 const _onDrain = Symbol("_onDrain");
 const _streams = Symbol("_streams");
 
-exports.Pipeline = class Pipeline extends Minipass {
+export class Pipeline extends Minipass {
 	constructor(opts, ...streams) {
 		if (isStream(opts)) {
 			streams.unshift(opts);
@@ -121,4 +123,4 @@ exports.Pipeline = class Pipeline extends Minipass {
 		this[_head].end(chunk, enc, cb);
 		return this;
 	}
-};
+}

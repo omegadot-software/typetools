@@ -1,10 +1,7 @@
 import { mkdirTmp } from "@omegadot/fs";
-import {
-	FileNotFoundError,
-	FileSystemStorageEngine,
-	StorageEngine,
-	S3StorageEngine,
-} from "@omegadot/storage-engine";
+import { FileNotFoundError, StorageEngine } from "@omegadot/storage-engine";
+import { FileSystemStorageEngine } from "@omegadot/storage-engine-fs";
+import { S3StorageEngine } from "@omegadot/storage-engine-s3";
 import { createDuplex, Writable } from "@omegadot/streams";
 import * as dotenv from "dotenv";
 

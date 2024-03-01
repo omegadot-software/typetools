@@ -1,7 +1,6 @@
 import { createReadStream } from "fs";
 import { resolve } from "path";
 
-import { sleep } from "./sleep";
 import { ReusableFileHandle } from "../ReusableFileHandle";
 
 describe("ReusableFileHandle", () => {
@@ -23,7 +22,7 @@ describe("ReusableFileHandle", () => {
 		expect(closeSpy).toHaveBeenCalled();
 	});
 
-	test("does not close file if another access occurs after less than `timout`", async () => {
+	test("does not close file if another access occurs after less than `timeout`", async () => {
 		const reusableFileHandle = new ReusableFileHandle(path, timeout);
 		const freeableHandle1 = await reusableFileHandle.getFileHandle();
 		const closeSpy1 = jest.spyOn(freeableHandle1.handle, "close");
@@ -113,4 +112,12 @@ async function simpleReadStream(
 
 		stream.on("error", reject);
 	});
+}
+
+/**
+ * Returns a promise that resolves after `ms` milliseconds.
+ * @param ms
+ */
+function sleep(ms: number) {
+	return new Promise<void>((resolve) => setTimeout(resolve, ms));
 }
