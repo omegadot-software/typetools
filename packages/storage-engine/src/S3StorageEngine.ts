@@ -296,8 +296,26 @@ export class S3StorageEngine extends StorageEngine {
 		return duplex;
 	}
 
-	async getDownloadLink(fileName: string): Promise<string> {
-		const getObjectCommand = new GetObjectCommand(this.getBaseObject(fileName));
+	/**
+	 * Generates a presigned URL for downloading a file from an S3 bucket.
+	 *
+	 * @param {string} objectName - The name of the object in the S3 bucket.
+	 * @param {string} [fileName] - The name of the file to be used in the 'Content-Disposition' header.
+	 *
+	 * @returns {Promise<string>} A promise that resolves to a presigned URL for the specified file.
+	 */
+	async getDownloadLink(
+		objectName: string,
+		fileName?: string
+	): Promise<string> {
+		const getObjectCommand = new GetObjectCommand(
+			fileName
+				? {
+						...this.getBaseObject(objectName),
+						ResponseContentDisposition: `attachment; filename="${fileName}"`,
+				  }
+				: this.getBaseObject(objectName)
+		);
 		return getSignedUrl(this.s3client, getObjectCommand, { expiresIn: 3600 });
 	}
 
