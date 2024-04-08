@@ -26,7 +26,12 @@
 
 		"newLine": "lf",
 
-		"types": ["node", "jest"],
+		"types": [
+			"node",
+			"jest",
+			"@cloudflare/workers-types",
+			"vitest-environment-miniflare/globals"
+		],
 
 		"baseUrl": "./types",
 		"typeRoots": ["types", "node_modules/@types"]

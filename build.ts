@@ -6,6 +6,7 @@ for (const pkg of [
 	"streams",
 	"storage-engine",
 	"storage-engine-fs",
+	"storage-engine-r2",
 	"storage-engine-s3",
 	"tabular-data",
 ]) {

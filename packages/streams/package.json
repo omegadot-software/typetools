@@ -16,6 +16,6 @@
 	},
 	"dependencies": {
 		"@omegadot/assert": "^0.2.3",
-		"minipass": "^5.0.0"
+		"minipass": "^7.0.4"
 	}
 }

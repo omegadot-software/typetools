@@ -1,0 +1,8 @@
+name = "r2-worker-test"
+main = "src/workerMain.ts"
+compatibility_date = "2024-02-23"
+compatibility_flags = [ "nodejs_compat" ]
+
+[[r2_buckets]]
+binding = "r2WorkerTest"
+bucket_name = "r2WorkerTest"

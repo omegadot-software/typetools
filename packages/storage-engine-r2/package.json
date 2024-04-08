@@ -1,0 +1,31 @@
+{
+	"name": "@omegadot/storage-engine-r2",
+	"type": "module",
+	"version": "0.1.0",
+	"author": "Jakob Jägerfeld <j.jaegerfeld@omegadot.software>",
+	"exports": {
+		"import": "./dist/src/index.js",
+		"require": "./dist/cjs/index.js"
+	},
+	"types": "./dist/src/index.d.ts",
+	"files": [
+		"dist"
+	],
+	"scripts": {
+		"generate-barrels": "run -T barrelsby --delete -e __tests__ -d src",
+		"test": "NODE_OPTIONS=--experimental-vm-modules vitest R2StorageEngine"
+	},
+	"dependencies": {
+		"@cloudflare/workers-types": "^4.20240320.1",
+		"@omegadot/assert": "^0.2.2",
+		"@omegadot/storage-engine": "^0.4.0",
+		"@omegadot/streams": "^0.1.2"
+	},
+	"devDependencies": {
+		"@cloudflare/vitest-pool-workers": "^0.1.10",
+		"dotenv": "^16.0.3",
+		"vitest": "1.3.0",
+		"vitest-environment-miniflare": "^2.14.2",
+		"wrangler": "^3.37.0"
+	}
+}

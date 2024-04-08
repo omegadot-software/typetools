@@ -8,6 +8,7 @@
 		{ "path": "./packages/streams/tsconfig-build.json" },
 		{ "path": "./packages/storage-engine/tsconfig-build.json" },
 		{ "path": "./packages/storage-engine-fs/tsconfig-build.json" },
+		{ "path": "./packages/storage-engine-r2/tsconfig-build.json" },
 		{ "path": "./packages/storage-engine-s3/tsconfig-build.json" },
 		{ "path": "./packages/tabular-data/tsconfig-build.json" },
 		{ "path": "./packages/tsrc/tsconfig-build.json" },
