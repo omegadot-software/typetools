@@ -49,7 +49,10 @@ export function createDuplex<TIn, TOut>(arg?: {
 		const write = mp.write.bind(mp);
 
 		const cb = (error: Error | null | undefined, data?: TOut): void => {
-			if (error) return mp.destroy(error);
+			if (error) {
+				mp.destroy(error);
+				return;
+			}
 
 			write(data);
 		};
