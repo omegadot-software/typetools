@@ -29,8 +29,6 @@
 		"types": [
 			"node",
 			"jest",
-			"@cloudflare/workers-types",
-			"vitest-environment-miniflare/globals"
 		],
 
 		"baseUrl": "./types",
