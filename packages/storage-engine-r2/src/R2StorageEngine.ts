@@ -1,7 +1,7 @@
 import { Buffer } from "node:buffer";
 import { Readable as NodeReadable } from "node:stream";
 
-import { R2Bucket } from "@cloudflare/workers-types";
+import { R2Bucket, ReadableStream } from "@cloudflare/workers-types";
 // import { R2UploadedPart } from "@miniflare/r2";
 import { assertDefined, assertInstanceof } from "@omegadot/assert";
 import {
@@ -13,6 +13,7 @@ import {
 	Readable,
 	createReadable,
 	createPipeline,
+	createDuplex,
 	// createDuplex,
 } from "@omegadot/streams";
 
@@ -74,26 +75,27 @@ export class R2StorageEngine extends StorageEngine {
 		// }
 	}
 
-	// createWriteStream(path: string) {
-	// 	const duplex = createDuplex<Buffer, Buffer>();
-	// 	const { readable, writable } = new TransformStream<Buffer, Buffer>();
-	// 	const writer = writable.getWriter();
-	// 	duplex.on("data", (chunk) => {
-	// 		void writer.write(chunk);
-	// 	});
-	// 	duplex.on("end", () => void writer.close());
-	//
-	// 	void this.r2Bucket.put(path, readable);
-	// 	// .then((response) => {
-	// 	// 	if (response === null) {
-	// 	// 		throw new FileNotFoundError();
-	// 	// 	}
-	// 	// })
-	// 	// .catch((e) => {
-	// 	// 	throw e;
-	// 	// });
-	//
-	// 	return duplex;
+	createWriteStream(path: string) {
+		const duplex = createDuplex<Buffer, Buffer>();
+
+		const readable = new ReadableStream({
+			start(controller) {
+				duplex.on("data", (chunk) => controller.enqueue(chunk));
+				duplex.on("end", () => controller.close());
+				duplex.on("error", (e) => controller.error(e));
+			},
+			cancel() {
+				duplex.destroy(new Error("Stream was cancelled"));
+			},
+		});
+
+		this.r2Bucket.put(path, readable).catch((e) => {
+			const error = e instanceof Error ? e : new Error("Unknown error");
+			duplex.destroy(error);
+		});
+
+		return duplex;
+	}
 	//
 	// 	// // Implementation via multipart upload. Problem: The parts are smaller, than the minimal part size of
 	// 	// const duplex = createDuplex<Buffer, Buffer>();
