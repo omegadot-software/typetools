@@ -9,12 +9,10 @@ import {
 	StorageEngine,
 } from "@omegadot/storage-engine";
 import { Miniflare } from "miniflare";
-import { test, expect, beforeAll } from "vitest";
+import { test, expect, beforeAll, describe } from "vitest";
 
 import { streamToString } from "../../../storage-engine/src";
 import { R2StorageEngine } from "../R2StorageEngine";
-
-const describe = setupMiniflareIsolatedStorage();
 
 describe("R2StorageEngine", () => {
 	let bucket: R2Bucket;
@@ -199,7 +197,7 @@ describe("R2StorageEngine", () => {
 
 		describe("createWriteStream()", () => {
 			test("appends data to end of file", async () => {
-				const stream = await sto.createWriteStream("stream.txt");
+				const stream = sto.createWriteStream("stream.txt");
 
 				stream.write(Buffer.from("012345"));
 				stream.write(Buffer.from("abcdef"));

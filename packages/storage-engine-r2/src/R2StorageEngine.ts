@@ -1,7 +1,12 @@
 import { Buffer } from "node:buffer";
 import { Readable as NodeReadable } from "node:stream";
 
-import { R2Bucket, ReadableStream } from "@cloudflare/workers-types";
+import { Upload } from "@aws-sdk/lib-storage";
+import {
+	R2Bucket,
+	ReadableStream,
+	// TransformStream,
+} from "@cloudflare/workers-types";
 // import { R2UploadedPart } from "@miniflare/r2";
 import { assertDefined, assertInstanceof } from "@omegadot/assert";
 import {
@@ -78,21 +83,56 @@ export class R2StorageEngine extends StorageEngine {
 	createWriteStream(path: string) {
 		const duplex = createDuplex<Buffer, Buffer>();
 
-		const readable = new ReadableStream({
-			start(controller) {
-				duplex.on("data", (chunk) => controller.enqueue(chunk));
-				duplex.on("end", () => controller.close());
-				duplex.on("error", (e) => controller.error(e));
-			},
-			cancel() {
-				duplex.destroy(new Error("Stream was cancelled"));
-			},
+		const { readable, writable } = new TransformStream();
+
+		const writer = writable.getWriter();
+
+		const done = this.r2Bucket.put(path, readable as ReadableStream);
+
+		let reject: (e: Error) => void;
+
+		// The following overrides make duplex.promise() resolve when the upload has completed,
+		// not immediately when the caller has called end().
+		duplex.promise = () =>
+			Promise.race([
+				new Promise((_, _reject) => {
+					reject = _reject;
+				}),
+				done
+					.then(() => {
+						// According to the nodejs docs, the 'close' event is emitted when the stream and any of its underlying
+						// resources (a file descriptor, for example) have been closed. The event indicates that no more events will be
+						// emitted, and no further computation will occur.
+						duplex.emit("close");
+					})
+					.catch((e) => {
+						assertInstanceof(e, Error);
+						// Destroy streams if the IIFE function causes issues on initialization
+						// caused while setting up the stream (for example if the S3 invocation causes errors)
+						duplex.destroy(e);
+						throw e;
+					}),
+			]).then();
+
+		duplex.on("data", (chunk) => {
+			writer.ready
+				.then(() => writer.write(chunk))
+				.catch((e) =>
+					reject(e instanceof Error ? e : new Error("Unknown error"))
+				);
 		});
 
-		this.r2Bucket.put(path, readable).catch((e) => {
-			const error = e instanceof Error ? e : new Error("Unknown error");
-			duplex.destroy(error);
+		// Call ready again to ensure that all chunks are written
+		//   before closing the writer.
+		duplex.on("end", () => {
+			writer.ready
+				.then(() => writer.close())
+				.catch((e) =>
+					reject(e instanceof Error ? e : new Error("Unknown error"))
+				);
 		});
+
+		duplex.on("error", (e) => reject(e));
 
 		return duplex;
 	}
