@@ -222,6 +222,19 @@ export class FileSystemStorageEngine extends StorageEngine {
 		}
 	}
 
+	async exists(fileName: string) {
+		try {
+			await stat(this.fullPath(fileName));
+		} catch (e) {
+			if (isENOENTError(e)) {
+				return false;
+			}
+			throw e;
+		}
+
+		return true;
+	}
+
 	private async open(
 		path: string,
 		flags = "r"

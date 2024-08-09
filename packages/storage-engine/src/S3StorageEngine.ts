@@ -14,6 +14,7 @@ import {
 } from "@aws-sdk/client-s3";
 import { Upload } from "@aws-sdk/lib-storage";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { RequestPresigningArguments } from "@aws-sdk/types";
 import { assertDefined, assertInstanceof } from "@omegadot/assert";
 import {
 	createDuplex,
@@ -70,13 +71,34 @@ export class S3StorageEngine extends StorageEngine {
 		);
 	}
 
+	private headObjectCommand(fileName: string) {
+		return this.s3client.send(
+			new HeadObjectCommand(this.getBaseObject(fileName))
+		);
+	}
+
+	async exists(fileName: string) {
+		try {
+			await this.headObjectCommand(fileName);
+		} catch (e) {
+			if (
+				e instanceof S3ServiceException &&
+				e.$metadata.httpStatusCode === 404
+			) {
+				return false;
+			}
+
+			throw e;
+		}
+
+		return true;
+	}
+
 	async size(fileName: string) {
 		let info;
 
 		try {
-			info = await this.s3client.send(
-				new HeadObjectCommand(this.getBaseObject(fileName))
-			);
+			info = await this.headObjectCommand(fileName);
 		} catch (e) {
 			if (
 				e instanceof S3ServiceException &&
@@ -301,12 +323,14 @@ export class S3StorageEngine extends StorageEngine {
 	 *
 	 * @param {string} objectName - The name of the object in the S3 bucket.
 	 * @param {string} [fileName] - The name of the file to be used in the 'Content-Disposition' header.
+	 * @param options - RequestPresigningArguments
 	 *
 	 * @returns {Promise<string>} A promise that resolves to a presigned URL for the specified file.
 	 */
 	async getDownloadLink(
 		objectName: string,
-		fileName?: string
+		fileName?: string,
+		options?: RequestPresigningArguments
 	): Promise<string> {
 		const getObjectCommand = new GetObjectCommand(
 			fileName
@@ -316,7 +340,12 @@ export class S3StorageEngine extends StorageEngine {
 				  }
 				: this.getBaseObject(objectName)
 		);
-		return getSignedUrl(this.s3client, getObjectCommand, { expiresIn: 3600 });
+
+		return getSignedUrl(
+			this.s3client,
+			getObjectCommand,
+			options ? options : { expiresIn: 3600 }
+		);
 	}
 
 	async getUploadLink(uploadId: string): Promise<string> {

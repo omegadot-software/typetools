@@ -1,6 +1,6 @@
 {
 	"name": "@omegadot/storage-engine",
-	"version": "0.3.3",
+	"version": "0.3.4",
 	"author": "Hendrik Gossler <h.gossler@omegadot.software>",
 	"exports": {
 		"import": "./dist/src/index.js",

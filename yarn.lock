@@ -2242,7 +2242,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@omegadot/storage-engine@^0.3.2, @omegadot/storage-engine@workspace:packages/storage-engine":
+"@omegadot/storage-engine@0.3.x, @omegadot/storage-engine@workspace:packages/storage-engine":
   version: 0.0.0-use.local
   resolution: "@omegadot/storage-engine@workspace:packages/storage-engine"
   dependencies:
@@ -2257,7 +2257,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@omegadot/streams@^0.1.2, @omegadot/streams@workspace:packages/streams":
+"@omegadot/streams@0.1.x, @omegadot/streams@^0.1.2, @omegadot/streams@workspace:packages/streams":
   version: 0.0.0-use.local
   resolution: "@omegadot/streams@workspace:packages/streams"
   dependencies:
@@ -2269,8 +2269,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@omegadot/tabular-data@workspace:packages/tabular-data"
   dependencies:
-    "@omegadot/storage-engine": ^0.3.2
-    "@omegadot/streams": ^0.1.2
+    "@omegadot/storage-engine": 0.3.x
+    "@omegadot/streams": 0.1.x
   languageName: unknown
   linkType: soft
 
