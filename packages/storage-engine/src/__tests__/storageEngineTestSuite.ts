@@ -112,6 +112,16 @@ export function storageEngineTestSuite(
 			});
 		});
 
+		describe("exists()", () => {
+			test("returns true for existing file", async () => {
+				expect(await sto.exists("abc.txt")).toBe(true);
+			});
+
+			test("returns false for non existing file", async () => {
+				expect(await sto.exists("THIS_FILE_SHOULD_NOT_EXIST")).toBe(false);
+			});
+		});
+
 		describe("createReadStream()", () => {
 			test("streams file contents", async () => {
 				const stream = sto.createReadStream("abc.txt");
