@@ -6,6 +6,7 @@ import {
 	CopyObjectCommand,
 	DeleteObjectCommand,
 	GetObjectCommand,
+	GetObjectCommandInput,
 	HeadObjectCommand,
 	PutObjectCommand,
 	S3,
@@ -322,21 +323,30 @@ export class S3StorageEngine extends StorageEngine {
 	 * Generates a presigned URL for downloading a file from an S3 bucket.
 	 *
 	 * @param {string} objectName - The name of the object in the S3 bucket.
-	 * @param {string} [fileName] - The name of the file to be used in the 'Content-Disposition' header.
-	 * @param options - RequestPresigningArguments
+	 * @param options - Options that are forwarded to the GetObjectCommand/Presigner.
 	 *
 	 * @returns {Promise<string>} A promise that resolves to a presigned URL for the specified file.
 	 */
 	async getDownloadLink(
 		objectName: string,
-		fileName?: string,
-		options?: RequestPresigningArguments
+		options?: {
+			get?: Pick<
+				GetObjectCommandInput,
+				| "ResponseCacheControl"
+				| "ResponseContentDisposition"
+				| "ResponseContentEncoding"
+				| "ResponseContentLanguage"
+				| "ResponseContentType"
+				| "ResponseExpires"
+			>;
+			sign?: RequestPresigningArguments;
+		}
 	): Promise<string> {
 		const getObjectCommand = new GetObjectCommand(
-			fileName
+			options
 				? {
 						...this.getBaseObject(objectName),
-						ResponseContentDisposition: `attachment; filename="${fileName}"`,
+						...options.get,
 				  }
 				: this.getBaseObject(objectName)
 		);
@@ -344,7 +354,7 @@ export class S3StorageEngine extends StorageEngine {
 		return getSignedUrl(
 			this.s3client,
 			getObjectCommand,
-			options ? options : { expiresIn: 3600 }
+			options?.sign ? options.sign : { expiresIn: 3600 }
 		);
 	}
 
