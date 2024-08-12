@@ -37,6 +37,11 @@ export abstract class StorageEngine {
 	abstract size(fileName: string): Promise<number>;
 
 	/**
+	 * Returns true if the file exists, otherwise false.
+	 */
+	abstract exists(fileName: string): Promise<boolean>;
+
+	/**
 	 * Options can include start and end values to read a range of bytes from the file instead of the entire file.
 	 * Both start and end are inclusive and start counting at 0, allowed values are in the [0, Number.MAX_SAFE_INTEGER]
 	 * range.
